@@ -63,11 +63,11 @@ public enum SecurityExceptionEnum {
    */
   FUNC_ROLE_EXISTS("FUNC_SEC_ROLE_0002", "functional.role.exist"), FUNC_ROLE_NOT_EXISTS(
       "FUNC_SEC_ROLE_0003",
-      "common.exception.rol.noexists"), TECH_ROLE_NOT_DELETE("TECH_SEC_ROLE_0001",
-          "functional.exception.rol.nodelete"), FUNC_ROLE_ASSIGNMENT_PERMISSION_EXISTS(
+      "common.exception.role.noexists"), TECH_ROLE_NOT_DELETE("TECH_SEC_ROLE_0001",
+          "functional.exception.role.nodelete"), FUNC_ROLE_ASSIGNMENT_PERMISSION_EXISTS(
               "FUNC_SEC_ROLE_0004",
-              "functional.exception.rol.assignment.exists"), FUNC_ROLE_ASSIGNMENT_PERMISSION_NOT_EXISTS(
-                  "FUNC_SEC_ROLE_0005", "functional.exception.rol.assignment.notexists"),
+              "functional.exception.role.assignment.exists"), FUNC_ROLE_ASSIGNMENT_PERMISSION_NOT_EXISTS(
+                  "FUNC_SEC_ROLE_0005", "functional.exception.role.assignment.notexists"),
 
   /**
    * Permission

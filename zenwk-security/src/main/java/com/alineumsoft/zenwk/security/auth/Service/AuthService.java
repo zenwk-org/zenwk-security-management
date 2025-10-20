@@ -1,10 +1,13 @@
 package com.alineumsoft.zenwk.security.auth.Service;
 
 import java.security.Principal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +20,7 @@ import com.alineumsoft.zenwk.security.auth.dto.ResetPasswordDTO;
 import com.alineumsoft.zenwk.security.auth.entity.Token;
 import com.alineumsoft.zenwk.security.auth.jwt.JwtProvider;
 import com.alineumsoft.zenwk.security.auth.repository.TokenRepository;
+import com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.exception.FunctionalException;
 import com.alineumsoft.zenwk.security.common.exception.TechnicalException;
@@ -34,6 +38,7 @@ import com.alineumsoft.zenwk.security.user.repository.UserHistRepository;
 import com.alineumsoft.zenwk.security.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,7 +116,8 @@ public class AuthService extends ApiRestSecurityHelper {
       User user = userService.findByUsername(username);
       List<String> roles = permissionService.listAllowedUrlsForUserRole(username);
       // Se genera el token con los permisos
-      outDTO.setToken(jwtProvider.generateToken(userDetails, roles, user.getId(), user.getState()));
+      outDTO.setToken(jwtProvider.generateToken(userDetails, roles, user.getId(), user.getState(),
+          user.getEmail()));
       outDTO.setUserId(user.getId());
 
       setLogSecuritySuccesfull(HttpStatus.OK.value(), logSec);
@@ -137,7 +143,7 @@ public class AuthService extends ApiRestSecurityHelper {
         CommonMessageConstants.NOT_APPLICABLE_BODY, CommonMessageConstants.NOT_APPLICABLE_BODY,
         SecurityActionEnum.AUTH_LOGOUT.getCode());
     try {
-      String token = jwtProvider.extractToken(request).orElseThrow();
+      String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
       jwtProvider.invalidateToken(token);
       setLogSecuritySuccesfull(HttpStatus.OK.value(), logSec);
       logSecRepo.save(logSec);
@@ -266,12 +272,13 @@ public class AuthService extends ApiRestSecurityHelper {
    */
   private void validatePassword(String password, Long userId) {
     // Validar que el password no sea el anterior ingresado
-    Optional<UserHist> listUserHist = userHistRepository.findLast20ByIdUser(userId);
+    List<UserHist> listUserHist = userHistRepository.findLast20ByIdUser(userId);
     if (!listUserHist.isEmpty()) {
       listUserHist = listUserHist.stream()
-          .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword())).findFirst();
+          .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword()))
+          .collect(Collectors.toList());
       // Si la constraseña se encuentra presente
-      if (listUserHist.isPresent()) {
+      if (!listUserHist.isEmpty()) {
         throw new IllegalArgumentException(
             SecurityExceptionEnum.FUNC_ERROR_PASSWORD_REUSE.getCodeMessage());
       }
@@ -297,15 +304,16 @@ public class AuthService extends ApiRestSecurityHelper {
 
     try {
       AuthResponseDTO outDTO = new AuthResponseDTO();
-      String token = jwtProvider.extractToken(request).orElseThrow();
+      String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
       Long idUser = jwtProvider.extractIdUser(token);
+      String email = jwtProvider.extractUserEmail(token);
       UserStateEnum state = jwtProvider.extractUserState(token);
       List<String> roles = permissionService.listAllowedUrlsForUserRole(username);
 
       // Si invalida token jwt actual cuando se emite uno nuevo.
       jwtProvider.invalidateToken(token);
 
-      outDTO.setToken(jwtProvider.generateToken(userDetails, roles, idUser, state));
+      outDTO.setToken(jwtProvider.generateToken(userDetails, roles, idUser, state, email));
       outDTO.setUserId(idUser);
 
       setLogSecuritySuccesfull(HttpStatus.OK.value(), logSec);
@@ -317,6 +325,52 @@ public class AuthService extends ApiRestSecurityHelper {
       setLogSecurityError(e, logSec);
       throw new TechnicalException(e.getMessage(), e.getCause(), logSecRepo, logSec);
     }
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_XX </b> Método general que genera la cookie httpOnly para el token JWT
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param response
+   * @param token
+   */
+  public void generateCookieHttpOnlyJwt(HttpServletResponse response, String token) {
+    ResponseCookie cookie = ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, token).httpOnly(true)
+        .secure(true).sameSite("None").path("/").maxAge(Duration.ofHours(24)).build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_XX </b> Método general que inactiva la cookie httpOnly para el token JWT
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param token
+   */
+  public void disabledCookieHttpOnlyJwt(HttpServletResponse response) {
+    ResponseCookie cookie = ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, "").httpOnly(true)
+        .secure(true).sameSite("None").path("/").maxAge(Duration.ofHours(0)).build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_XX </b> Método general que inactiva la cookie httpOnly para el token CSRF
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param token
+   */
+  public void disabledCookieHttpOnlyCsrfToken(HttpServletResponse response) {
+    ResponseCookie cookie = ResponseCookie.from(AuthConfigConstants.XCSRF_TOKEN, "").httpOnly(true)
+        .secure(true).sameSite("None").path("/").maxAge(Duration.ofHours(0)).build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 
 }

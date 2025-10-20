@@ -5,27 +5,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import com.alineumsoft.zenwk.security.auth.Service.PermissionService;
 import com.alineumsoft.zenwk.security.auth.jwt.JwtAuthenticationFilter;
 import com.alineumsoft.zenwk.security.common.enums.PermissionOperationEnum;
 import com.alineumsoft.zenwk.security.dto.PermissionDTO;
 import com.alineumsoft.zenwk.security.enums.HttpMethodResourceEnum;
-import com.alineumsoft.zenwk.security.person.repository.RolePermissionRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,9 +44,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Configuration
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityFilterChainConfiguration {
   public static final String CORS_AUTH_ALLOWED_ORIGINS = "${cors.allowed-origins}";
-
   /**
    * Componenete para jwt
    */
@@ -60,6 +64,10 @@ public class SecurityFilterChainConfiguration {
    */
   private final AccessDeniedHandler customAccessDeniedHandler;
   /**
+   * Filtro protección CSRF
+   */
+  private final CsrfValidationFilter csrfValidationFilter;
+  /**
    * Configuracion CORS
    */
   @Value(CORS_AUTH_ALLOWED_ORIGINS)
@@ -76,36 +84,40 @@ public class SecurityFilterChainConfiguration {
    */
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of(allowedOrigins.split(",")));
-    configuration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(List.of("Authorization", "content-type"));
-    configuration.setAllowCredentials(true);
+    log.info("Allowed origins: {}", allowedOrigins);
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+    config.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(
+        List.of("Authorization", "content-type", "X-XSRF-TOKEN", "X-USER-EMAIL"));
+    config.setAllowCredentials(true);
+    config.addExposedHeader("Location");
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
+    source.registerCorsConfiguration("/**", config);
     return source;
   }
 
   /**
    * <p>
-   * Constructor que inyecta el repositorio de permisos de roles.
+   * <b> CU001_XX_Filtro_XSS </b> Registra el filtro de protección contra ataques XSS (Cross Site
+   * Scripting). Este filtro intercepta las peticiones HTTP y limpia los parámetros de entrada
+   * potencialmente peligrosos antes de ser procesados por los controladores.
    * </p>
    * 
-   * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
-   * @param rolePermRepo
-   * @param jwtAuthFilter
-   * @param authenticationProvider
-   * @param permService
-   * @param customAccessDeniedHandler
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param xssFilter
+   * @return
    */
-  public SecurityFilterChainConfiguration(RolePermissionRepository rolePermRepo,
-      JwtAuthenticationFilter jwtAuthFilter, AuthenticationProvider authenticationProvider,
-      PermissionService permService, AccessDeniedHandler customAccessDeniedHandler) {
-    this.jwtAuthFilter = jwtAuthFilter;
-    this.authenticationProvider = authenticationProvider;
-    this.permService = permService;
-    this.customAccessDeniedHandler = customAccessDeniedHandler;
+  @Bean
+  public FilterRegistrationBean<XSSFilter> xssFilterRegistration(XSSFilter xssFilter) {
+    FilterRegistrationBean<XSSFilter> registration = new FilterRegistrationBean<>();
+    registration.setFilter(xssFilter);
+    registration.setName("xssFilter");
+    registration.addUrlPatterns("/*");
+    // Se ejecuta antes del CSRF y JWT (menor número = mayor prioridad)
+    registration.setOrder(1);
+    return registration;
   }
 
   /**
@@ -126,37 +138,81 @@ public class SecurityFilterChainConfiguration {
     final Map<PermissionOperationEnum, List<PermissionDTO>> maRolPermissions =
         permService.getOperationPermission();
     // Usa la configuraciópn por defecto: @Bean corsConfigurationSource()
-    http.cors(Customizer.withDefaults()).authorizeHttpRequests(request -> {
-      // Los enpoint que no requieres jwt para poder ser accedidos en la creación de cuentas /
-      // monitoreo con actuator
-      request
-          .requestMatchers(HttpMethodResourceEnum.USER_CREATE.getMethod(),
-              HttpMethodResourceEnum.USER_CREATE.getResource())
-          .permitAll().requestMatchers(HttpMethodResourceEnum.AUTH_LOGIN.getResource()).permitAll()
-          .requestMatchers(HttpMethodResourceEnum.VERIFICATION_TOKEN.getResource()).permitAll()
-          .requestMatchers(HttpMethodResourceEnum.USER_GET_EMAIL.getMethod(),
-              HttpMethodResourceEnum.USER_GET_EMAIL.getResource())
-          .permitAll()
-          .requestMatchers(HttpMethodResourceEnum.SEX_LIST_OPTIONS.getMethod(),
-              HttpMethodResourceEnum.SEX_LIST_OPTIONS.getResource())
-          .permitAll()
-          .requestMatchers(HttpMethodResourceEnum.AUTH_RESET_PASSWORD.getMethod(),
-              HttpMethodResourceEnum.AUTH_RESET_PASSWORD.getResource())
-          .permitAll().requestMatchers(HttpMethodResourceEnum.ACTUATOR.getResource()).permitAll();
-      // Se agregan los filtros restantes
-      addAuthorizationForOperation(request, maRolPermissions);
-      request.anyRequest().authenticated();
-    }).csrf(csrf -> csrf.disable())
+    http.headers(headers -> headers
+        // (protección XSS spring.security )
+        // Política moderna: evita ejecución de JS inyectado o inline
+        .contentSecurityPolicy(
+            csp -> csp.policyDirectives("default-src 'self'; " + "script-src 'self'; "
+                + "object-src 'none'; " + "style-src 'self' 'unsafe-inline'; " + "base-uri 'self'; "
+                + "frame-ancestors 'none'; " + "form-action 'self'; " + "img-src 'self' data:;"))
+        // Evita que se envíen referrers a otros dominios
+        .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
+        // csrf automatico deshabilitado para hacer uso del custom
+        .csrf(AbstractHttpConfigurer::disable)
+        // CORS (usa el bean @Bean corsConfigurationSource())
+        .cors(Customizer.withDefaults())
+        // Configurar las reglas de autorización
+        .authorizeHttpRequests(request -> configureAuthorizationRules(request, maRolPermissions))
+        // CSRF con repositorio basado en cookie (o usa tu filtro personalizado si aplica)
+        .addFilterBefore(csrfValidationFilter, CorsFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        // Política de sesión sin estado
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        // Autenticador principal
         .authenticationProvider(authenticationProvider)
-        // Configuración con el handler personalizado
-        // Captura el error y muestra un mensaje descriptivo con la causa
+        // Manejador de errores de acceso personalizado
         .exceptionHandling(exception -> exception.accessDeniedHandler(customAccessDeniedHandler));
 
     return http.build();
   }
+
+  /**
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Configura las reglas de autorización por path y
+   * método HTTP
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param request
+   * @param maRolPermissions
+   */
+  private void configureAuthorizationRules(
+      AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry request,
+      Map<PermissionOperationEnum, List<PermissionDTO>> maRolPermissions) {
+
+    // Endpoints públicos
+    request
+        .requestMatchers(HttpMethodResourceEnum.USER_CREATE.getMethod(),
+            HttpMethodResourceEnum.USER_CREATE.getResource())
+        .permitAll()
+        .requestMatchers(HttpMethodResourceEnum.USER_JWT_ME.getMethod(),
+            HttpMethodResourceEnum.USER_JWT_ME.getResource())
+        .permitAll()
+        .requestMatchers(HttpMethodResourceEnum.AUTH_LOGIN.getMethod(),
+            HttpMethodResourceEnum.AUTH_LOGIN.getResource())
+        .permitAll().requestMatchers(HttpMethodResourceEnum.VERIFICATION_TOKEN.getResource())
+        .permitAll()
+        .requestMatchers(HttpMethodResourceEnum.USER_GET_EMAIL.getMethod(),
+            HttpMethodResourceEnum.USER_GET_EMAIL.getResource())
+        .permitAll()
+        .requestMatchers(HttpMethodResourceEnum.SEX_LIST_OPTIONS.getMethod(),
+            HttpMethodResourceEnum.SEX_LIST_OPTIONS.getResource())
+        .permitAll()
+        // .requestMatchers(HttpMethodResourceEnum.AUTH_REFRESH_JWT.getMethod(),
+        // HttpMethodResourceEnum.AUTH_REFRESH_JWT.getResource())
+        // .permitAll()
+        .requestMatchers(HttpMethodResourceEnum.AUTH_RESET_PASSWORD.getMethod(),
+            HttpMethodResourceEnum.AUTH_RESET_PASSWORD.getResource())
+        .permitAll().requestMatchers(HttpMethodResourceEnum.ACTUATOR.getResource()).permitAll();
+
+    // Aplicar permisos basados en roles y operaciones
+    addAuthorizationForOperation(request, maRolPermissions);
+
+    // Todo lo demás requiere autenticación
+    request.anyRequest().authenticated();
+  }
+
 
   /**
    * <p>

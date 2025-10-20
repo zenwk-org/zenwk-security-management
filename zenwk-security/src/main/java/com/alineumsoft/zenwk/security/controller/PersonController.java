@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.alineumsoft.zenwk.security.enums.HttpMethodResourceEnum;
 import com.alineumsoft.zenwk.security.person.dto.CreatePersonDTO;
@@ -135,6 +137,26 @@ public class PersonController {
   public ResponseEntity<PagePersonDTO> getAllPersons(HttpServletRequest request,
       @AuthenticationPrincipal UserDetails userDetails, Pageable pegeable) {
     return ResponseEntity.ok(personService.getAllPersons(pegeable, request, userDetails));
+  }
+
+
+  /**
+   * 
+   * <p>
+   * <b>CU001_Seguridad_Creacion_Usuario </b> Servicio para cargar la foto de perfil de usuario
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param request
+   * @param userDetails
+   * @param file
+   * @return
+   */
+  @PostMapping("/profile/upload-photo")
+  public ResponseEntity<Void> uploadPhotoProfile(HttpServletRequest request,
+      @AuthenticationPrincipal UserDetails userDetails, @RequestParam MultipartFile file) {
+    personService.uploadPhotoProfile(request, userDetails, file);
+    return ResponseEntity.noContent().build();
   }
 
 }

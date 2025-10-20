@@ -59,7 +59,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response,
       AccessDeniedException accessDeniedException) throws IOException {
-    String token = jwtProvider.extractToken(request).orElse(null);
+    String token = jwtProvider.extractTokenFromAuthorization(request).orElse(null);
     String username = jwtProvider.extractAllClaims(token).getSubject();
     jwtProvider.sendErrorResponse(username, request, response, HttpServletResponse.SC_FORBIDDEN,
         SecurityExceptionEnum.FUNC_AUTH_URI_FORBIDDEN);

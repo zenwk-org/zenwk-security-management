@@ -8,6 +8,7 @@ import static com.alineumsoft.zenwk.security.common.constants.AuthConfigConstant
 import static com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants.JWT_ROLES;
 import static com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants.JWT_SECRET_KEY;
 import static com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants.JWT_URLS_ALLOWED_ROL_USER;
+import static com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants.JWT_USER_EMAIL;
 import static com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants.JWT_USER_STATE;
 import java.io.IOException;
 import java.security.Key;
@@ -27,6 +28,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.exception.FunctionalException;
 import com.alineumsoft.zenwk.security.common.exception.TechnicalException;
@@ -44,6 +46,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -106,10 +109,11 @@ public class JwtProvider extends ApiRestSecurityHelper {
    * @param listAllowedUrlsForUserRole
    * @param idUser
    * @param userState
+   * @param email
    * @return
    */
   public String generateToken(UserDetails userDetails, List<String> listAllowedUrlsForUserRole,
-      Long idUser, UserStateEnum userState) {
+      Long idUser, UserStateEnum userState, String email) {
     // Se agrega valor extra al calim, para agregar roles
     Map<String, Object> extraClaim = new HashMap<>();
     List<String> listRoles = userDetails.getAuthorities().stream()
@@ -122,6 +126,8 @@ public class JwtProvider extends ApiRestSecurityHelper {
     extraClaim.put(JWT_ID_USER, idUser);
     // estado del usuario
     extraClaim.put(JWT_USER_STATE, userState);
+    // Email del usuario
+    extraClaim.put(JWT_USER_EMAIL, email);
 
     // Generacion del token.
     String token = Jwts.builder().setClaims(new HashMap<>()).addClaims(extraClaim)
@@ -296,17 +302,40 @@ public class JwtProvider extends ApiRestSecurityHelper {
   /**
    * 
    * <p>
-   * <b> CU001_Seguridad_Creacion_Usuario </b> Extrae el token JWT del encabezado de la solicitud.
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Extrae el token JWT del encabezado Authorization de
+   * la solicitud.
    * </p>
    * 
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param request
    * @return
    */
-  public Optional<String> extractToken(HttpServletRequest request) {
+  public Optional<String> extractTokenFromAuthorization(HttpServletRequest request) {
     String authorizationHeader = request.getHeader(HEADER_AUTHORIZATION);
     if (authorizationHeader != null && authorizationHeader.startsWith(AUTHORIZATION_BEARER)) {
       return Optional.of(authorizationHeader.substring(INDEX_TOKEN));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Extrae el token JWT desde la cookie httpOnly desde la
+   * solicitud
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param request
+   * @return
+   */
+  public Optional<String> extractJwtFromCookie(HttpServletRequest request) {
+    if (request.getCookies() != null) {
+      for (Cookie cookie : request.getCookies()) {
+        if (AuthConfigConstants.ZENWK_JWT.equals(cookie.getName())) {
+          return Optional.of(cookie.getValue());
+        }
+      }
     }
     return Optional.empty();
   }
@@ -431,6 +460,22 @@ public class JwtProvider extends ApiRestSecurityHelper {
     Claims claims = extractAllClaims(token);
     UserStateEnum userState = UserStateEnum.valueOf(claims.get(JWT_USER_STATE).toString());
     return userState;
+  }
+
+
+  /**
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Optiene el email del usuario
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param token
+   * @return
+   */
+  public String extractUserEmail(String token) {
+    Claims claims = extractAllClaims(token);
+    return claims.get(JWT_USER_EMAIL).toString();
+
   }
 
 }

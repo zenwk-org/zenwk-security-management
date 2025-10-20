@@ -19,15 +19,18 @@ public enum HttpMethodResourceEnum {
    * Recursos par ala entidad usuarios
    */
   USER_CREATE(HttpMethod.POST, "/api/users"), USER_UPDATE(HttpMethod.PUT,
-      "/api/users/{id}"), USER_DELETE(HttpMethod.DELETE,
-          "/api/users/{id}"), USER_LIST(HttpMethod.GET, "/api/users"), USER_GET(HttpMethod.GET,
-              "/api/users/{id}"), USER_GET_EMAIL(HttpMethod.GET, "/api/users/email/{email}"),
+      "/api/users/{id}"), USER_DELETE(HttpMethod.DELETE, "/api/users/{id}"), USER_LIST(
+          HttpMethod.GET,
+          "/api/users"), USER_GET(HttpMethod.GET, "/api/users/{id}"), USER_GET_EMAIL(HttpMethod.GET,
+              "/api/users/email/{email}"), USER_JWT_ME(HttpMethod.GET, "/api/users/me"),
   /**
    * Recursos para la entidad persona
    */
   PERSON_CREATE(HttpMethod.POST, "/api/persons"), PERSON_UPDATE(HttpMethod.PUT,
       "/api/persons/{id}"), PERSON_DELETE(HttpMethod.DELETE, "/api/persons/{id}"), PERSON_LIST(
-          HttpMethod.GET, "/api/persons"), PERSON_GET(HttpMethod.GET, "/api/persons/{id}"),
+          HttpMethod.GET, "/api/persons"), PERSON_GET(HttpMethod.GET,
+              "/api/persons/{id}"), PERSON_UPLOAD_PHOTO_PROFILE(HttpMethod.POST,
+                  "/profile/upload-photo"),
   /**
    * Permisos
    */

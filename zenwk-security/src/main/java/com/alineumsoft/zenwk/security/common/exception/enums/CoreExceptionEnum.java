@@ -22,7 +22,16 @@ public enum CoreExceptionEnum {
           "common.exception.error.enum.message.notfound"), TECH_COMMON_ANOTATION_ENTITY_NOT_EXISTS(
               "TECH_GEN_0003", "common.exception.entity.noexists"), FUNC_COMMON_ERROR_GENERAL(
                   "FUNC_COM_0004", "common.exception.error.general"), FUNC_COMMON_ROLE_NOT_EXIST(
-                      "FUNC_COM_0005", "common.exception.rol.noexists");
+                      "FUNC_COM_0005", "common.exception.rol.noexists"),
+  /**
+   * Token CSRF
+   */
+  FUNC_VERIFICATION_TOKEN_CSRF_REVOKED("FUNC_SEC_VERIFICATION_CSRF_0001",
+      "functional.verification.token.csrf.revoked"), FUNC_VERIFICATION_TOKEN_CSRF_NOT_FOUND(
+          "FUNC_SEC_VERIFICATION_CSRF_0002",
+          "functional.verification.token.csrf.nofound"), FUNC_VERIFICATION_TOKEN_CSRF_EXPIRATION(
+              "FUNC_SEC_VERIFICATION_CSRF_0003", "functional.verification.token.expiration");
+
 
   /**
    * code

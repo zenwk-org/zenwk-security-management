@@ -84,5 +84,10 @@ public final class DtoValidationKeys {
       "validation.resetpassword.codetoken.notnull";
   public static final String RESET_PASSWORD_CODE_UUID_NOT_NULL =
       "validation.resetpassword.codeuuid.notnull";
+  /**
+   * TokenDTO
+   */
+  public static final String URL_OR_EMPTY_REGEX = "validation.resetpassaord.url.not.valid";
+
 
 }

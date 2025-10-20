@@ -10,5 +10,9 @@ package com.alineumsoft.zenwk.security.common.enums;
  * @class PermissionOperationEnum
  */
 public enum PermissionOperationEnum {
-  CREATE, UPDATE, DELETE, GET, LIST
+  CREATE, UPDATE, DELETE, GET, LIST,
+  /**
+   * CSRF
+   */
+  HEAD, OPTIONS, TRACE;
 }

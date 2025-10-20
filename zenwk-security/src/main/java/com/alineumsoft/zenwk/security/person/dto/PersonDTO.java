@@ -1,7 +1,6 @@
 package com.alineumsoft.zenwk.security.person.dto;
 
 import java.io.Serializable;
-import org.springframework.web.multipart.MultipartFile;
 import com.alineumsoft.zenwk.security.common.constants.RegexConstants;
 import com.alineumsoft.zenwk.security.constants.DtoValidationKeys;
 import com.alineumsoft.zenwk.security.person.entity.Person;
@@ -87,7 +86,7 @@ public class PersonDTO implements Serializable {
    * Foto de perfil
    */
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private MultipartFile profilePicture;
+  private byte[] profilePicture;
 
 
 
@@ -107,6 +106,7 @@ public class PersonDTO implements Serializable {
     this.address = person.getAddress();
     this.age = person.getAge();
     this.idSex = person.getPersonSex() != null ? person.getPersonSex().getId() : null;
+    this.profilePicture = person.getProfilePicture();
 
   }
 }

@@ -1,6 +1,6 @@
 package com.alineumsoft.zenwk.security.user.repository;
 
-import java.util.Optional;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import com.alineumsoft.zenwk.security.user.entity.UserHist;
@@ -28,7 +28,7 @@ public interface UserHistRepository extends JpaRepository<UserHist, Long> {
    * @param idUser
    * @return
    */
-  @Query(name = JPQL_FIND_HIST_USER_BY_ID)
-  public Optional<UserHist> findLast20ByIdUser(Long idUser);
+  @Query(JPQL_FIND_HIST_USER_BY_ID)
+  public List<UserHist> findLast20ByIdUser(Long idUser);
 
 }

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import com.alineumsoft.zenwk.security.auth.jwt.JwtProvider;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.exception.FunctionalException;
@@ -75,6 +76,7 @@ public class PersonService extends ApiRestSecurityHelper {
    */
   private final PersonSexService personSexService;
 
+
   /**
    * <p>
    * <b> CU001_Seguridad_Creacion_Usuario </b> Metodo de servicio que crea una persona si cumple con
@@ -117,7 +119,7 @@ public class PersonService extends ApiRestSecurityHelper {
    * @param request
    */
   private void validateUser(CreatePersonDTO dto, HttpServletRequest request) {
-    String token = jwtProvider.extractToken(request).orElseThrow();
+    String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
     Long idUser = jwtProvider.extractIdUser(token);
     List<String> roles = jwtProvider.extractAuthorities(token);
     UserStateEnum userState = jwtProvider.extractUserState(token);
@@ -375,8 +377,8 @@ public class PersonService extends ApiRestSecurityHelper {
     // procesamos la imagen del perfil del usuario
     if (dto.getProfilePicture() != null) {
       try {
-        person.setProfilePicture(dto.getProfilePicture().getBytes());
-      } catch (IOException e) {
+        person.setProfilePicture(dto.getProfilePicture());
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -567,5 +569,61 @@ public class PersonService extends ApiRestSecurityHelper {
       throw new IllegalArgumentException(SecurityExceptionEnum.FUNC_PERSON_EXIST.getCodeMessage());
     }
     return false;
+  }
+
+
+  /**
+   * <p>
+   * <b>CU001_Seguridad_Creacion_Usuario </b> Gestiona la carga de la foto de perfil de usuario.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param request
+   * @param userDetails
+   * @param file
+   */
+  public void uploadPhotoProfile(HttpServletRequest request, UserDetails userDetails,
+      MultipartFile file) {
+    LogSecurity logSecurity = initializeLog(request, userDetails.getUsername(),
+        CommonMessageConstants.NOT_APPLICABLE_BODY, CommonMessageConstants.NOT_APPLICABLE_BODY,
+        SecurityActionEnum.PERSON_UPLOAD_PHOTO_PROFILE.getCode());
+    try {
+      String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
+      Long idUser = jwtProvider.extractIdUser(token);
+      Person person =
+          personRepo.findPersonFromUserId(idUser).orElseThrow(() -> new EntityNotFoundException(
+              SecurityExceptionEnum.FUNC_PERSON_NOT_FOUND.getMessage()));
+
+      savePhotoProfile(file, person);
+      saveSuccessLog(HttpStatus.NO_CONTENT.value(), logSecurity, logSecUserRespo);
+
+    } catch (RuntimeException e) {
+      if (isFunctionalException(e)) {
+        throw new FunctionalException(e.getMessage(), e.getCause(), logSecUserRespo, logSecurity);
+      }
+      throw new TechnicalException(e.getMessage(), e.getCause(), logSecUserRespo, logSecurity);
+    }
+  }
+
+
+  /**
+   * 
+   * <p>
+   * <b>CU001_Seguridad_Creacion_Usuario </b> Actualiza la información en la entidad persona.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param file
+   * @param person
+   */
+  private void savePhotoProfile(MultipartFile file, Person person) {
+    try {
+      person.setProfilePicture(file.getBytes());
+      personRepo.save(person);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+
+    }
+
   }
 }

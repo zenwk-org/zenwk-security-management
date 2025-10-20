@@ -1,5 +1,6 @@
 package com.alineumsoft.zenwk.security.controller;
 
+
 import java.security.Principal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +19,7 @@ import com.alineumsoft.zenwk.security.auth.dto.AuthResponseDTO;
 import com.alineumsoft.zenwk.security.auth.dto.LogoutOutDTO;
 import com.alineumsoft.zenwk.security.auth.dto.ResetPasswordDTO;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -53,8 +55,11 @@ public class AuthController {
    */
   @PostMapping("/login")
   public ResponseEntity<AuthResponseDTO> login(@RequestBody @Validated AuthRequestDTO request,
-      HttpServletRequest servRequest, Principal principal) {
-    return ResponseEntity.ok(authService.authenticate(request, servRequest, principal));
+      HttpServletRequest servRequest, Principal principal, HttpServletResponse reponse) {
+    AuthResponseDTO authDto = authService.authenticate(request, servRequest, principal);
+    // Construcción de la cookie http only para no guardar jwt en sesión o localstorage
+    authService.generateCookieHttpOnlyJwt(reponse, authDto.getToken());
+    return ResponseEntity.ok(authDto);
   }
 
   /**
@@ -66,12 +71,15 @@ public class AuthController {
    * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
    * @param request
    * @param userDetails
+   * 
    * @return
    */
   @DeleteMapping("/logout")
   public ResponseEntity<LogoutOutDTO> logout(HttpServletRequest request,
-      @AuthenticationPrincipal UserDetails userDetails) {
+      @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
     authService.logout(request, userDetails);
+    authService.disabledCookieHttpOnlyJwt(response);
+    authService.disabledCookieHttpOnlyCsrfToken(response);
     return ResponseEntity.ok(new LogoutOutDTO(AuthEnums.AUTH_LOGOUT_SUCCES.getMessage()));
   }
 
@@ -108,8 +116,10 @@ public class AuthController {
    */
   @PostMapping("/refresh-jwt")
   public ResponseEntity<AuthResponseDTO> refreshJwt(HttpServletRequest request,
-      @AuthenticationPrincipal UserDetails userDetails) {
-    return ResponseEntity.ok(authService.refreshJwt(request, userDetails));
+      @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
+    AuthResponseDTO authDto = authService.refreshJwt(request, userDetails);
+    authService.generateCookieHttpOnlyJwt(response, authDto.getToken());
+    return ResponseEntity.ok(authDto);
   }
 
 

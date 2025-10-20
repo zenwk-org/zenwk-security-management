@@ -22,6 +22,12 @@ public interface PersonRepository
       "SELECT u.id FROM User u  LEFT JOIN u.person p WHERE p.id = :idPerson ";
 
   /**
+   * JPQL que consulta la persona por medio del userId
+   */
+  public final static String JPQL_FIND_PERSON_FROM_USER_ID =
+      "SELECT p FROM User u  LEFT JOIN u.person p WHERE u.id = :userId ";
+
+  /**
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param id
    * @return
@@ -59,5 +65,19 @@ public interface PersonRepository
   public boolean existsByFirstNameAndMiddleNameAndLastNameAndMiddleLastNameAndDateOfBirth(
       String firstName, String middleName, String lastName, String middleLastName,
       LocalDateTime dateOfBirth);
+
+  /**
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> JPQL para la busqueda de la persona a través del
+   * userId
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param idPerson
+   * @return
+   */
+  @Query(JPQL_FIND_PERSON_FROM_USER_ID)
+  public Optional<Person> findPersonFromUserId(Long userId);
+
 
 }

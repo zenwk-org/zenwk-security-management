@@ -1,5 +1,11 @@
 server:
   port: ${SEVER_PORT:8087}
+  ssl:
+    enabled: true
+    key-store: ${KEY_STORE:classpath:http://localhost:6600/keystore/dev/zenwk_dev.keystore}
+    key-store-password: ${SSL_KEY_STORE_PASSWORD:123456}
+    key-password: ${SSL_KEY_PASSWORD:123456}
+    key-alias: ${SSL_SERVER_ALIAS:zenwk-local}
 
 spring:
   application:
@@ -8,7 +14,7 @@ spring:
     import: ${SPRING_CONFIG_COMMON_APPLICATION:optional:configserver:http://localhost:8086}
 
 cors:
-  allowed-origins: ${CORS_AUTH_ALLOWED_ORIGINS:http://localhost:3000}
+  allowed-origins: ${CORS_AUTH_ALLOWED_ORIGINS}
 
 security:
   # Deshablitar prod / hablitar autenticación perfil de pruebas
@@ -20,7 +26,14 @@ security:
     expiration-time: ${JWT_EXPIRATION:86400000}
     token-prefix: Bearer
     header-string: Authorization
-    enabled: true 
+    enabled: true
+  # Nombres explicitos del dominio
+  csrf:
+    cookie-domain: ${COOKIE_DOMAIN}
+
+validation:
+  regex:
+    allowed-url: "${ALLOWED_URLS:^(|https?:\\/\\/(localhost|([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,})(:\\d+)?(\\/[^\\s]*)?)$}"
 
 app:
   datasource:

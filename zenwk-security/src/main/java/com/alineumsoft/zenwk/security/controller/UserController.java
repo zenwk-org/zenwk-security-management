@@ -114,9 +114,27 @@ public class UserController {
   @GetMapping("/{idUser}")
   public ResponseEntity<UserDTO> findByIdUser(@PathVariable Long idUser, HttpServletRequest request,
       @AuthenticationPrincipal UserDetails userDetails) {
-
     return ResponseEntity.ok(userService.findByIdUser(idUser, request, userDetails));
   }
+
+  /**
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Recupera los datos del usuario actualmente
+   * autenticado en el sistema
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param idUser
+   * @param request
+   * @param userDetails
+   * @return
+   */
+  @GetMapping("/me")
+  public ResponseEntity<UserDTO> getCurrentUser(HttpServletRequest request,
+      @AuthenticationPrincipal UserDetails userDetails) {
+    return ResponseEntity.ok(userService.getCurrentUser(request, userDetails));
+  }
+
 
   /**
    * <p>

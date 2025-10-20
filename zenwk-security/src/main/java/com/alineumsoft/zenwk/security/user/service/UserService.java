@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.alineumsoft.zenwk.security.auth.Service.RoleAssignmentService;
 import com.alineumsoft.zenwk.security.auth.dto.RoleUserDTO;
+import com.alineumsoft.zenwk.security.auth.jwt.JwtProvider;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.constants.GeneralConstants;
 import com.alineumsoft.zenwk.security.common.constants.RegexConstants;
@@ -79,6 +80,12 @@ public class UserService extends ApiRestSecurityHelper {
    * Servicio la gestión en el asignamiento de roles
    */
   private final RoleAssignmentService roleAsignmentService;
+
+  /**
+   * Manejador de jwt
+   */
+  private final JwtProvider jwtProvider;
+
 
   /**
    * <p>
@@ -396,6 +403,41 @@ public class UserService extends ApiRestSecurityHelper {
     LogSecurity logSecurity = initializeLog(request, userDetails.getUsername(), notBody, notBody,
         SecurityActionEnum.USER_GET.getCode());
     try {
+      User user = userRepository.findById(idUser).orElseThrow(() -> new EntityNotFoundException(
+          SecurityExceptionEnum.FUNC_USER_NOT_FOUND_ID.getCodeMessage(idUser.toString())));
+      // Pesistencia de log
+      saveSuccessLog(HttpStatus.OK.value(), logSecurity, logSecurityUserRespository);
+      // se oculta el password
+      user.setPassword(GeneralConstants.VALUE_SENSITY_MASK);
+      return new UserDTO(user);
+    } catch (EntityNotFoundException e) {
+      setLogSecurityError(e, logSecurity);
+      throw new FunctionalException(e.getMessage(), e.getCause(), logSecurityUserRespository,
+          logSecurity);
+    }
+
+  }
+
+
+
+  /**
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Recuperacion del usuario autenticado desde el jwt
+   * almacenado en la cookie
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param idUser
+   * @param request
+   * @param userDetails
+   * @return
+   */
+  public UserDTO getCurrentUser(HttpServletRequest request, UserDetails userDetails) {
+    LogSecurity logSecurity = initializeLog(request, userDetails.getUsername(), notBody, notBody,
+        SecurityActionEnum.USER_ME_JWT.getCode());
+    try {
+      String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
+      Long idUser = jwtProvider.extractIdUser(token);
       User user = userRepository.findById(idUser).orElseThrow(() -> new EntityNotFoundException(
           SecurityExceptionEnum.FUNC_USER_NOT_FOUND_ID.getCodeMessage(idUser.toString())));
       // Pesistencia de log

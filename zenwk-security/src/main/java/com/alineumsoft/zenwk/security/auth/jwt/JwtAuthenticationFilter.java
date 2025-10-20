@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
+import com.alineumsoft.zenwk.security.config.util.ConfigUtils;
 import com.alineumsoft.zenwk.security.enums.HttpMethodResourceEnum;
 import com.alineumsoft.zenwk.security.enums.RoleEnum;
 import com.alineumsoft.zenwk.security.enums.SecurityExceptionEnum;
@@ -65,7 +66,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       FilterChain filterChain) throws ServletException, IOException {
     String username = null;
     try {
-      String token = jwtProvider.extractToken(request).orElse(null);
+      // Si es un enpoint public se slta la validación jwt
+      if (ConfigUtils.isPublicEndpoint(request.getRequestURI())) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
+      String token = jwtProvider.extractJwtFromCookie(request).orElse(null);
+
       // Si el token es invalido no continua con el proceso de autorizacion de la
       // sesion
       if (token == null) {
@@ -136,11 +144,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // Si el el rol user esta presente se inspeccionan que las uri correpondan a los
     // ids asociados a ese usuario
     if ((roles.contains((RoleEnum.USER.name())) || roles.contains((RoleEnum.NEW_USER.name())))
-        && List
-            .of(HttpMethodResourceEnum.USER_CREATE.getResource(),
-                HttpMethodResourceEnum.PERSON_CREATE.getResource(),
-                HttpMethodResourceEnum.AUTH_REFRESH_JWT.getResource())
-            .stream().anyMatch(uri::contains)) {
+        && List.of(HttpMethodResourceEnum.USER_CREATE.getResource(),
+            HttpMethodResourceEnum.PERSON_CREATE.getResource()
+        // .HttpMethodResourceEnum.AUTH_REFRESH_JWT.getResource()
+        ).stream().anyMatch(uri::contains)) {
       return jwtProvider.extractUrlsAllowedRolUser(token).contains(uri);
     }
     return true;
@@ -164,5 +171,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Map.of(WEB_DETAILS, new WebAuthenticationDetailsSource().buildDetails(request));
     authentication.setDetails(details);
   }
+
 
 }
