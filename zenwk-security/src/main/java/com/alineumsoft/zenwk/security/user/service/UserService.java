@@ -100,7 +100,7 @@ public class UserService extends ApiRestSecurityHelper {
    * @return
    * @throws JsonProcessingException
    */
-  public Long createUser(UserDTO dto, HttpServletRequest request, UserDetails userDetails) {
+  public Long createUser(UserDTO dto, HttpServletRequest request) {
     // inicializacion log transaccional
     LogSecurity logSecurity = initializeLog(request, dto.getUsername(), getJson(dto), notBody,
         SecurityActionEnum.USER_CREATE.getCode());
@@ -200,14 +200,19 @@ public class UserService extends ApiRestSecurityHelper {
     User user = userRepository.findById(idUser).orElseThrow(() -> new EntityNotFoundException(
         SecurityExceptionEnum.FUNC_USER_NOT_FOUND_ID.getCodeMessage(idUser.toString())));
     // Se ejecuta la transaccion
-    return templateTx.execute(transaction -> {
+    Boolean result = templateTx.execute(transaction -> {
       try {
         return deleteUserRecord(idUser, logSecurity, user, userDetails);
       } catch (RuntimeException e) {
         transaction.setRollbackOnly();
-        throw new RuntimeException(getMessageSQLException(e));
+        throw new EntityNotFoundException(getMessageSQLException(e));
       }
     });
+
+    if (result == null) {
+      throw new IllegalStateException("Transaction result is null for deleteUserTx");
+    }
+    return result;
   }
 
   /**
@@ -276,15 +281,21 @@ public class UserService extends ApiRestSecurityHelper {
     User userTarget = userRepository.findById(idUser).orElseThrow(() -> new EntityNotFoundException(
         SecurityExceptionEnum.FUNC_USER_NOT_FOUND_ID.getCodeMessage(idUser.toString())));
     // Se da inicio a la transccion de actualizacion
-    return templateTx.execute(transaction -> {
+
+    Boolean result = templateTx.execute(transaction -> {
       try {
         updateUserRecord(userTarget, idUser, dto, person, logSecurity);
         return true;
       } catch (RuntimeException e) {
         transaction.setRollbackOnly();
-        throw new RuntimeException(e);
+        throw new EntityNotFoundException(e);
       }
     });
+
+    if (result == null) {
+      throw new IllegalStateException("Transaction result is null for updateUserTx");
+    }
+    return result;
   }
 
   /**
@@ -511,9 +522,12 @@ public class UserService extends ApiRestSecurityHelper {
    * @return
    */
   private PageUserDTO getFindAll(Page<User> pageUser, LogSecurity logSecurity) {
-    List<UserDTO> listUser = pageUser.stream().map(user -> new UserDTO(user))
-        .peek(user -> user.setPassword(GeneralConstants.VALUE_SENSITY_MASK))
-        .collect(Collectors.toList());
+    List<UserDTO> listUser = pageUser.stream().map(user -> {
+      UserDTO dto = new UserDTO(user);
+      dto.setPassword(GeneralConstants.VALUE_SENSITY_MASK);
+      return dto;
+    }).toList();
+
     // Pesistencia de log
     saveSuccessLog(HttpStatus.OK.value(), logSecurity, logSecurityUserRespository);
     return new PageUserDTO(listUser, new PaginatorDTO(pageUser.getTotalElements(),
@@ -627,11 +641,10 @@ public class UserService extends ApiRestSecurityHelper {
    * </p>
    * 
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param username
    * @param httpRequest
    * @return
    */
-  public List<Role> findRolesByUsername(String username, HttpServletRequest httpRequest) {
+  public List<Role> findRolesByUsername(String username) {
     try {
       // se obtienen los roles del usuario
       return getRolesForUser(username);
@@ -746,7 +759,8 @@ public class UserService extends ApiRestSecurityHelper {
 
     try {
       if (!email.matches(RegexConstants.EMAIL)) {
-        throw new RuntimeException(SecurityExceptionEnum.FUNC_USER_EMAIL_INVALID.getCodeMessage());
+        throw new IllegalArgumentException(
+            SecurityExceptionEnum.FUNC_USER_EMAIL_INVALID.getCodeMessage());
       }
       if (findByEmail(email) != null) {
         setLogSecurityError(
