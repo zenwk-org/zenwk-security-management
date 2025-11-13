@@ -1,6 +1,7 @@
 package com.alineumsoft.zenwk.security.auth.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -73,8 +74,8 @@ public class CustomUserDetailsService
     }
 
     // Consulta de los roles asociados al usuario
-    List<String> rolesName =
-        userService.findRolesByUsername(username, request).stream().map(Role::getName).toList();
+    List<String> rolesName = userService.findRolesByUsername(username, request).stream()
+        .map(Role::getName).collect(Collectors.toList());
 
 
 

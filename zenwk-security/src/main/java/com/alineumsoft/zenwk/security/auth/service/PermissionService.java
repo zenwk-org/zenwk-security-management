@@ -7,6 +7,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -129,7 +130,8 @@ public class PermissionService extends ApiRestSecurityHelper {
   public List<String> listAllowedUrlsForUserRole(String username) {
     User user = userService.findByUsername(username);
     List<RoleUser> rolesUser = userService.findRolesUserByUser(user);
-    List<String> namesRole = rolesUser.stream().map(role -> role.getRole().getName()).toList();
+    List<String> namesRole =
+        rolesUser.stream().map(role -> role.getRole().getName()).collect(Collectors.toList());
     List<String> permissionResources = rolePermRepo.findResourcesByRolName(namesRole);
 
     if (namesRole.contains(RoleEnum.USER.name()) || namesRole.contains(RoleEnum.NEW_USER.name())) {
@@ -138,10 +140,10 @@ public class PermissionService extends ApiRestSecurityHelper {
           url = generatedUrlFromId(user, url);
         }
         return url;
-      }).toList();
+      }).collect(Collectors.toList());
     }
 
-    return permissionResources.stream().filter(Objects::nonNull).toList();
+    return permissionResources.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   /**
@@ -383,8 +385,8 @@ public class PermissionService extends ApiRestSecurityHelper {
    * @return
    */
   public PagePermissionDTO getPagePermissionDTO(Page<Permission> pagePermission) {
-    List<PermissionDTO> permissions =
-        pagePermission.stream().map(permission -> new PermissionDTO(permission)).toList();
+    List<PermissionDTO> permissions = pagePermission.stream()
+        .map(permission -> new PermissionDTO(permission)).collect(Collectors.toList());
     PaginatorDTO paginator = new PaginatorDTO(pagePermission.getTotalElements(),
         pagePermission.getTotalPages(), pagePermission.getNumber() + 1);
     return new PagePermissionDTO(permissions, paginator);

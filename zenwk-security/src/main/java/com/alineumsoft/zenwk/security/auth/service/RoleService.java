@@ -2,6 +2,7 @@ package com.alineumsoft.zenwk.security.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -186,7 +187,7 @@ public class RoleService extends ApiRestSecurityHelper {
    * @return
    */
   public PageRoleDTO getPageRolesDTO(Page<Role> pageRoles) {
-    List<RoleDTO> roles = pageRoles.stream().map(RoleDTO::new).toList();
+    List<RoleDTO> roles = pageRoles.stream().map(RoleDTO::new).collect(Collectors.toList());
     PaginatorDTO paginator = new PaginatorDTO(pageRoles.getTotalElements(),
         pageRoles.getTotalPages(), pageRoles.getNumber() + 1);
     return new PageRoleDTO(roles, paginator);
