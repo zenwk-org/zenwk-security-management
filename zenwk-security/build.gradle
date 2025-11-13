@@ -1,0 +1,90 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.0'
+	id 'io.spring.dependency-management' version '1.1.6' 
+	id "org.sonarqube" version "7.0.1.6134"
+	id 'jacoco'
+}
+
+group = 'com.alineumsoft.zenwk.security'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-web-services'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	
+	compileOnly 'org.projectlombok:lombok'
+	
+	annotationProcessor 'org.projectlombok:lombok'
+	runtimeOnly 'org.postgresql:postgresql'
+	
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // Para las validaciones a nivel de bean:
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+	implementation 'org.hibernate.validator:hibernate-validator'
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'org.springframework.cloud:spring-cloud-starter-config' 
+	implementation 'org.apache.commons:commons-text:1.12.0'
+	//implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240310.1'
+	
+	// Configuración  h2, pu
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
+	testImplementation 'org.mockito:mockito-core'
+}
+
+
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2024.0.0"
+    }
+}
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "-parameters" // Para habilitar la inclusión de parámetros de método en la compilación
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat = 'short'
+    }
+    // Fuerza siempre la ejecución de las pruebas
+    // outputs.upToDateWhen { false }
+}
+
+
+def commonJacoco = file("${rootDir}/../../zenwk-workflows/common/gradle/jacoco.gradle")
+if (!commonJacoco.exists()) {
+    commonJacoco = file("${rootDir}/gradle/jacoco.gradle")
+}
+apply from: commonJacoco

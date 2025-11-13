@@ -3,9 +3,14 @@
 
 # Log file
 *.log
+*.gz
 
 # BlueJ files
 *.ctxt
+
+/logs/
+
+*.DS_Store
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -23,3 +28,5 @@
 hs_err_pid*
 replay_pid*
 /.metadata/
+security/.DS_Store
+*.gz

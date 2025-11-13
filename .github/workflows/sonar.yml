@@ -1,0 +1,17 @@
+name: SonarCloud
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonar:
+    uses: zenwk-org/zenwk-workflows/.github/workflows/sonarcloud.yml@main
+    with:
+      projectKey: ZenWkZen_zenwk-security-management
+      organization: zenwk
+      microserviceDir: ./zenwk-security
+    secrets: inherit

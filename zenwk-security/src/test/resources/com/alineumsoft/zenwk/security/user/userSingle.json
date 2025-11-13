@@ -1,0 +1,12 @@
+{
+	"idUsuario": 1,
+	"nombre": "Carlos",
+	"apellido": "Gómez",
+	"email": "carlos.gomez@example.com",
+	"username": "cgomez",
+	"estado": "ACTIVO",
+	"fechaCreacion": "2024-12-01T10:15:30",
+	"fechaModificacion": "2024-12-05T14:20:45",
+	"usuarioCreacion": "admin",
+	"usuarioModificacion": "admin"
+}

@@ -1,0 +1,49 @@
+server:
+  port: ${SEVER_PORT:8087}
+  ssl:
+    enabled: true
+    key-store: ${KEY_STORE:classpath:http://localhost:6600/keystore/dev/zenwk_dev.keystore}
+    key-store-password: ${SSL_KEY_STORE_PASSWORD:123456}
+    key-password: ${SSL_KEY_PASSWORD:123456}
+    key-alias: ${SSL_SERVER_ALIAS:zenwk-local}
+
+spring:
+  application:
+    name: security-zenwk
+  config:
+    import: ${SPRING_CONFIG_COMMON_APPLICATION:optional:configserver:http://localhost:8086}
+
+cors:
+  allowed-origins: ${CORS_AUTH_ALLOWED_ORIGINS}
+
+security:
+  # Deshablitar prod / hablitar autenticación perfil de pruebas
+  test-config:
+    config.enabled: test
+  jwt:
+    secret: ${JWT_SECRET:U3VwM1I1Y1IzdFA0czVXMHJEIFwU3VwM1I1Y1IzdFA0czVXMHJEIFw=}
+    # Tiempo en milisegundos que dura la validez del token JWT (24 horas)
+    expiration-time: ${JWT_EXPIRATION:86400000}
+    token-prefix: Bearer
+    header-string: Authorization
+    enabled: true
+  # Nombres explicitos del dominio
+  csrf:
+    cookie-domain: ${COOKIE_DOMAIN}
+
+validation:
+  regex:
+    allowed-url: "${ALLOWED_URLS:^(|https?:\\/\\/(localhost|([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,})(:\\d+)?(\\/[^\\s]*)?)$}"
+
+app:
+  datasource:
+    hikari:
+      jdbc-url: ${DB_JDBC_URL:jdbc:postgresql://localhost:5432/zenwk}
+      username: ${DB_USERNAME:calegria}
+      password: ${DB_PASSWORD:calegria}
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
