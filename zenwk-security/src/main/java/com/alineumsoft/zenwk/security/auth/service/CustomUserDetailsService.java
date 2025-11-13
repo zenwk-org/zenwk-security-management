@@ -60,7 +60,6 @@ public class CustomUserDetailsService
     UserDetails userDetail = null;
     String username = null;
     User.UserBuilder userBuilder = User.builder();
-    HttpServletRequest request = getCurrentHttpRequest();
     startTime.set(System.currentTimeMillis());
 
     // Se recupera el usuario desde la bd
@@ -74,8 +73,8 @@ public class CustomUserDetailsService
     }
 
     // Consulta de los roles asociados al usuario
-    List<String> rolesName = userService.findRolesByUsername(username, request).stream()
-        .map(Role::getName).collect(Collectors.toList());
+    List<String> rolesName = userService.findRolesByUsername(username).stream().map(Role::getName)
+        .collect(Collectors.toList());
 
 
 

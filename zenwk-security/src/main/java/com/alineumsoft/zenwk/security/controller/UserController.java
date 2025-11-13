@@ -51,15 +51,13 @@ public class UserController {
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param dto
    * @param uriCB
-   * @param userDetails
    * @param request
    * @return
    */
   @PostMapping
   public ResponseEntity<Void> createUser(@Validated @RequestBody UserDTO dto,
-      UriComponentsBuilder uriCB, @AuthenticationPrincipal UserDetails userDetails,
-      HttpServletRequest request) {
-    Long idUser = userService.createUser(dto, request, userDetails);
+      UriComponentsBuilder uriCB, HttpServletRequest request) {
+    Long idUser = userService.createUser(dto, request);
     URI location =
         uriCB.path(HttpMethodResourceEnum.USER_GET.getResource()).buildAndExpand(idUser).toUri();
     return ResponseEntity.created(location).build();
