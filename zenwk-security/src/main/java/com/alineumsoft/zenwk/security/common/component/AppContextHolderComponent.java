@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AppContextHolderComponent implements ApplicationContextAware {
-  private static ApplicationContext context;
+  private ApplicationContext context;
 
   /**
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
@@ -25,7 +25,7 @@ public class AppContextHolderComponent implements ApplicationContextAware {
    */
   @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    context = applicationContext;
+    this.context = applicationContext;
   }
 
   /**
@@ -38,7 +38,7 @@ public class AppContextHolderComponent implements ApplicationContextAware {
    * @param clazz
    * @return
    */
-  public static <T> T getBean(Class<T> clazz) {
+  public <T> T getBean(Class<T> clazz) {
     return context.getBean(clazz);
   }
 }

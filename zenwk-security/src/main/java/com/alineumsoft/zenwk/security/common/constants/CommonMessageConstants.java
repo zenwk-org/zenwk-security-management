@@ -1,15 +1,19 @@
 package com.alineumsoft.zenwk.security.common.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project SecurityUser
  * @class LogMessageConstants
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommonMessageConstants {
   // Indica que el recurso solicitado no fue encontrado.
-  public final static String NOT_FOUND = "NOT_FOUND";
+  public static final String NOT_FOUND = "NOT_FOUND";
   // Indica que no hay contenido para la solicitud
-  public final static String NO_CONTENT = "NOT_CONTENT";
+  public static final String NO_CONTENT = "NOT_CONTENT";
   // Indica que no se esperaba un cuerpo en la solicitud o respuesta.
   public static final String NOT_APPLICABLE_BODY = "NOT_APPLICABLE_BODY";
   // Indica que la solicitud fue exitosa y no termino con error.
@@ -23,8 +27,8 @@ public final class CommonMessageConstants {
   // Plantilla mensaje functionalExcpetion
   public static final String LOG_MSG_EXCEPTION_FUNCTIONAL = "Functional error: {}";
   public static final String LOG_MSG_EXCEPTION = "Error: {}";
-  public final static String ILEGAL_ARGUMENT_EXCEPTION = "IllegalArgumentException:";
-  public final static String ILEGAL_ACCESS_EXCEPTION = "IllegalAccessException:";
+  public static final String ILEGAL_ARGUMENT_EXCEPTION = "IllegalArgumentException:";
+  public static final String ILEGAL_ACCESS_EXCEPTION = "IllegalAccessException:";
   // Formato: [codigo] mensaje para mostrar los errores.
   public static final String FORMAT_EXCEPTION = "[%s] %s";
   // Prefijo para excepciones tecnicas.

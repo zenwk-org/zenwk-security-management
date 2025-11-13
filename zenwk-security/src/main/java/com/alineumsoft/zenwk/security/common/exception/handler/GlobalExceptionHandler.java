@@ -2,7 +2,6 @@ package com.alineumsoft.zenwk.security.common.exception.handler;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestControllerAdvice
 @Slf4j
-public class GlobalHandlerException {
+public class GlobalExceptionHandler {
   /**
    * Error geneal
    */
@@ -43,7 +42,7 @@ public class GlobalHandlerException {
    * @return
    */
   @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<ErrorResponseDTO> HandleGeneralException(RuntimeException e) {
+  public ResponseEntity<ErrorResponseDTO> handleGeneralException(RuntimeException e) {
     log.error(CommonMessageConstants.LOG_MSG_EXCEPTION, e.getMessage());
     String code = extractCode(e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(createNewError(e, code));
@@ -59,7 +58,7 @@ public class GlobalHandlerException {
    * @return
    */
   @ExceptionHandler(TechnicalException.class)
-  public ResponseEntity<ErrorResponseDTO> HandleTechnicalException(TechnicalException e) {
+  public ResponseEntity<ErrorResponseDTO> handleTechnicalException(TechnicalException e) {
     log.error(CommonMessageConstants.LOG_MSG_EXCEPTION_TECHNICAL, e.getMessage());
     String code = extractCode(e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(createNewError(e, code));
@@ -75,7 +74,7 @@ public class GlobalHandlerException {
    * @return
    */
   @ExceptionHandler(FunctionalException.class)
-  public ResponseEntity<ErrorResponseDTO> HandleFunctionalException(FunctionalException e) {
+  public ResponseEntity<ErrorResponseDTO> handleFunctionalException(FunctionalException e) {
     log.error(CommonMessageConstants.LOG_MSG_EXCEPTION_FUNCTIONAL, e.getMessage());
     String code = extractCode(e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createNewError(e, code));
@@ -97,7 +96,8 @@ public class GlobalHandlerException {
     List<ErrorResponseDTO> listError = e.getBindingResult().getFieldErrors().stream()
         .map(fieldError -> new ErrorResponseDTO(fieldError.getField(),
             MessageSourceAccessorComponent.getMessage(fieldError.getDefaultMessage()), null, null))
-        .collect(Collectors.toList());
+        .toList();
+
     return ResponseEntity.badRequest().body(listError);
   }
 

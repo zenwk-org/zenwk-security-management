@@ -5,7 +5,7 @@ import java.util.Map;
 import com.alineumsoft.zenwk.security.common.component.RequestTimingFilter;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.constants.GeneralConstants;
-import com.alineumsoft.zenwk.security.common.exception.handler.GlobalHandlerException;
+import com.alineumsoft.zenwk.security.common.exception.handler.GlobalExceptionHandler;
 import com.alineumsoft.zenwk.security.constants.ServiceControllerConstants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -109,11 +109,9 @@ public class ApiRestHelper {
    * @param logSecUser
    */
   public boolean isFunctionalException(RuntimeException e) {
-    String code = GlobalHandlerException.extractCode(e.getMessage());
-    if (code != null && code.contains(CommonMessageConstants.FUNCTIONAL_EXCEPTION_PREFIX)) {
-      return true;
-    }
-    return false;
+    String code = GlobalExceptionHandler.extractCode(e.getMessage());
+    return code != null && code.contains(CommonMessageConstants.FUNCTIONAL_EXCEPTION_PREFIX);
+
   }
 
   /**

@@ -1,5 +1,8 @@
 package com.alineumsoft.zenwk.security.common.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * <p>
  * Expresiones regulares comunes
@@ -9,6 +12,7 @@ package com.alineumsoft.zenwk.security.common.constants;
  * @project security-zenwk
  * @class RegexConstants
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RegexConstants {
   // Letras, espacios, longitud 1-50.
   public static final String NAME = "^[A-Za-záéíóúÁÉÍÓÚñÑ]{1,30}$";

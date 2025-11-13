@@ -3,6 +3,8 @@ package com.alineumsoft.zenwk.security.common.util;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -13,6 +15,7 @@ import java.util.UUID;
  * @project verification-zenwk
  * @class codeGenerator
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CodeGenerator {
   /**
    * random java.util.secureRandom
