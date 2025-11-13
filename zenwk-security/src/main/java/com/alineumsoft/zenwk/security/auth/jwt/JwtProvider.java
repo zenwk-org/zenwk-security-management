@@ -163,7 +163,7 @@ public class JwtProvider extends ApiRestSecurityHelper {
   /**
    * <p>
    * <b> CU001_Seguridad_Creacion_Usuario </b> Se usa la misma clave para verificar que el token no
-   * ha sido alterado y extrae todo el claims.
+   * ha sido alterado y extrae todo el claims
    * </p>
    * 
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
@@ -234,10 +234,8 @@ public class JwtProvider extends ApiRestSecurityHelper {
    * @return
    */
   private Date getDateExpiration() {
-    // log.info("JwtUtil.getDateExpiration(): " + (1000 * 60 * 60) / 60 + "m");
     log.info(
         "JwtUtil.getDateExpiration() - " + JWT_EXPIRATION_TIME + ":" + expirationTime / 60 + "m");
-    // return new Date(System.currentTimeMillis() + 1000 * 60);
     return new Date(System.currentTimeMillis() + expirationTime);
   }
 
@@ -441,8 +439,7 @@ public class JwtProvider extends ApiRestSecurityHelper {
    */
   public Long extractIdUser(String token) {
     Claims claims = extractAllClaims(token);
-    Long idUser = Long.parseLong(claims.get(JWT_ID_USER).toString());
-    return idUser;
+    return Long.parseLong(claims.get(JWT_ID_USER).toString());
   }
 
   /**
@@ -456,8 +453,8 @@ public class JwtProvider extends ApiRestSecurityHelper {
    */
   public UserStateEnum extractUserState(String token) {
     Claims claims = extractAllClaims(token);
-    UserStateEnum userState = UserStateEnum.valueOf(claims.get(JWT_USER_STATE).toString());
-    return userState;
+    return UserStateEnum.valueOf(claims.get(JWT_USER_STATE).toString());
+
   }
 
 
