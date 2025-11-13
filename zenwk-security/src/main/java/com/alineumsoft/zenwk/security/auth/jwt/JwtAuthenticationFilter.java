@@ -15,7 +15,6 @@ import com.alineumsoft.zenwk.security.config.util.ConfigUtils;
 import com.alineumsoft.zenwk.security.enums.HttpMethodResourceEnum;
 import com.alineumsoft.zenwk.security.enums.RoleEnum;
 import com.alineumsoft.zenwk.security.enums.SecurityExceptionEnum;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,45 +65,89 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       FilterChain filterChain) throws ServletException, IOException {
     String username = null;
     try {
-      // Si es un enpoint public se slta la validación jwt
+      // 1. Enpoints públicos
       if (ConfigUtils.isPublicEndpoint(request.getRequestURI())) {
         filterChain.doFilter(request, response);
         return;
       }
-
-      String token = jwtProvider.extractJwtFromCookie(request).orElse(null);
-
-      // Si el token es invalido no continua con el proceso de autorizacion de la
-      // sesion
+      // 2. EL token es obligatorio
+      String token = extractTokenJwt(request, response);
       if (token == null) {
-        filterChain.doFilter(request, response);
         return;
       }
+      // 3. Validación de la autenticación
       username = jwtProvider.extractAllClaims(token).getSubject();
-      if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails = jwtProvider.extractUserDetails(token).orElse(null);
-
-        if (userDetails == null || !jwtProvider.validateToken(token, username)) {
-          jwtProvider.sendErrorResponse(username, request, response,
-              HttpServletResponse.SC_UNAUTHORIZED,
-              SecurityExceptionEnum.FUNC_AUTH_TOKEN_JWT_INVALID);
-          return;
-
-        } else if (!validateRolUser(token, request)) {
-          jwtProvider.sendErrorResponse(username, request, response,
-              HttpServletResponse.SC_FORBIDDEN, SecurityExceptionEnum.FUNC_AUTH_URI_FORBIDDEN);
-          return;
-
-        } else {
-          authenticateUser(userDetails, request);
-        }
+      if (validateAuthenticate(request, response, token, username)) {
+        filterChain.doFilter(request, response);
       }
-      filterChain.doFilter(request, response);
-    } catch (JwtException e) {
+    } catch (Exception e) {
       log.error(CommonMessageConstants.LOG_MSG_EXCEPTION, e);
       jwtProvider.sendErrorResponse(username, request, response,
           HttpServletResponse.SC_UNAUTHORIZED, e);
     }
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Extrae el token y lo valida.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param request
+   * @param response
+   * @return
+   * @throws IOException
+   */
+  private String extractTokenJwt(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    String token = jwtProvider.extractJwtFromCookie(request).orElse(null);
+
+    // Si el token es invalido no continua con el proceso de autorizacion de la
+    // sesion
+    if (token == null) {
+      jwtProvider.sendErrorResponse(null, request, response, HttpServletResponse.SC_UNAUTHORIZED,
+          SecurityExceptionEnum.FUNC_AUTH_TOKEN_NOT_FOUND);
+    }
+
+    return token;
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Valida los roles del usuario y permisos para acpetar
+   * la autentiación.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param request
+   * @param response
+   * @param token
+   * @return
+   * @throws IOException
+   */
+  private boolean validateAuthenticate(HttpServletRequest request, HttpServletResponse response,
+      String token, String username) throws IOException {
+    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      UserDetails userDetails = jwtProvider.extractUserDetails(token).orElse(null);
+
+      if (userDetails == null || !jwtProvider.validateToken(token, username)) {
+        jwtProvider.sendErrorResponse(username, request, response,
+            HttpServletResponse.SC_UNAUTHORIZED, SecurityExceptionEnum.FUNC_AUTH_TOKEN_JWT_INVALID);
+        return false;
+
+      } else if (!validateRolUser(token, request)) {
+        jwtProvider.sendErrorResponse(username, request, response, HttpServletResponse.SC_FORBIDDEN,
+            SecurityExceptionEnum.FUNC_AUTH_URI_FORBIDDEN);
+        return false;
+
+      } else {
+        authenticateUser(userDetails, request);
+      }
+    }
+    return true;
+
   }
 
   /**
@@ -144,10 +187,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // Si el el rol user esta presente se inspeccionan que las uri correpondan a los
     // ids asociados a ese usuario
     if ((roles.contains((RoleEnum.USER.name())) || roles.contains((RoleEnum.NEW_USER.name())))
-        && List.of(HttpMethodResourceEnum.USER_CREATE.getResource(),
-            HttpMethodResourceEnum.PERSON_CREATE.getResource()
-        // .HttpMethodResourceEnum.AUTH_REFRESH_JWT.getResource()
-        ).stream().anyMatch(uri::contains)) {
+        && (HttpMethodResourceEnum.USER_CREATE.getResource().equals(uri)
+            || HttpMethodResourceEnum.PERSON_CREATE.getResource().equals(uri))) {
       return jwtProvider.extractUrlsAllowedRolUser(token).contains(uri);
     }
     return true;

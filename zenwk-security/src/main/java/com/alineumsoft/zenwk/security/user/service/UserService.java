@@ -749,13 +749,17 @@ public class UserService extends ApiRestSecurityHelper {
         throw new RuntimeException(SecurityExceptionEnum.FUNC_USER_EMAIL_INVALID.getCodeMessage());
       }
       if (findByEmail(email) != null) {
-        throw new RuntimeException(
-            SecurityExceptionEnum.FUNC_USER_CREATE_EMAIL_UNIQUE.getCodeMessage());
+        setLogSecurityError(
+            (new RuntimeException(
+                SecurityExceptionEnum.FUNC_USER_CREATE_EMAIL_UNIQUE.getCodeMessage())),
+            logSecurity);
+        return true;
       }
     } catch (EntityNotFoundException e) {
       e.printStackTrace();
-    } catch (RuntimeException e) {
-      setLogSecurityError(e, logSecurity);
+    } catch (Exception e) {
+      log.error("UserService.findByEmail - ", e.getMessage());
+      setLogSecurityError((RuntimeException) e, logSecurity);
       throw new FunctionalException(e.getMessage(), e.getCause(), logSecurityUserRespository,
           logSecurity);
     }

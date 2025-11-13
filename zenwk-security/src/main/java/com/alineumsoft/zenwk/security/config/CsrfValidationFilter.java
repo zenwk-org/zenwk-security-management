@@ -79,11 +79,9 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
       return;
     }
 
-    // Todo endpoint no public debe pasar por el filtro csrf.
-    String token = extractCookieFromName(request, AuthConfigConstants.XCSRF_TOKEN).orElse(null);
-    // Obtenemos el email desde el jwt
-    String jwt = extractCookieFromName(request, AuthConfigConstants.ZENWK_JWT).orElse(null);
-    String email = jwtProvider.extractUserEmail(jwt);
+    String tokenCsrf = extractCookieFromName(request, AuthConfigConstants.XCSRF_TOKEN).orElse(null);
+    String tokenJwt = extractCookieFromName(request, AuthConfigConstants.ZENWK_JWT).orElse(null);
+    String email = jwtProvider.extractUserEmail(tokenJwt);
 
 
     if (!isValidOrigin(request)) {
@@ -93,7 +91,7 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
     }
 
     // Se da el acceso si el token csrf es valido
-    if (validateCsrfToken(response, token, email, request)) {
+    if (validateCsrfToken(response, tokenCsrf, tokenJwt, email, request)) {
       filterChain.doFilter(request, response);
     }
   }
@@ -160,23 +158,30 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
    * 
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param response
-   * @param token
+   * @param tokenCsrf
    * @param email
    * @param request
    * @return
    * @throws IOException
    */
-  private boolean validateCsrfToken(HttpServletResponse response, String token, String email,
-      HttpServletRequest request) throws IOException {
-    if (token == null || email == null) {
-      log.warn("CSRF invalid credentials - no coinciden el parametro token / email");
+  private boolean validateCsrfToken(HttpServletResponse response, String tokenCsrf, String tokenJwt,
+      String email, HttpServletRequest request) throws IOException {
+
+    if (!ConfigUtils.isActiveLogout(tokenCsrf, tokenJwt, request.getRequestURI())) {
+      log.error("CSRF invalid credentials - nulo en el parametro tokenCsrf / tokenJwt");
       response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-          CoreExceptionEnum.FUNC_VERIFICATION_TOKEN_CSRF_NOT_FOUND.getCodeMessage(email, token));
+          CoreExceptionEnum.FUNC_VERIFICATION_TOKEN_CSRF_NOT_FOUND.getCodeMessage(email,
+              tokenCsrf));
     } else {
+      if (tokenCsrf == null) {
+        // Sesión activa pero sin token csrf por inactividad
+        // debe permitrise el logut
+        return true;
+      }
       try {
         TokenDTO tokenDto = new TokenDTO();
         tokenDto.setEmail(email);
-        tokenDto.setCode(token);
+        tokenDto.setCode(tokenCsrf);
         CsrfToken csrfToken = csrfTokenCommonService.validateCsrfToken(tokenDto);
 
 

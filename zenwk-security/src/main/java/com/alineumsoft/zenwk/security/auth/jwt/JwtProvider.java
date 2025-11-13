@@ -195,9 +195,7 @@ public class JwtProvider extends ApiRestSecurityHelper {
       final Claims claim = extractAllClaims(token);
       String tokenUsername = claim.getSubject();
       Date tokenExpired = claim.getExpiration();
-      String validToken = cacheToken.get(username);
-      return username.equals(tokenUsername) && !tokenExpired.before(new Date())
-          && token.equals(validToken);
+      return username.equals(tokenUsername) && !tokenExpired.before(new Date());
     } catch (JwtException | IllegalArgumentException e) {
       log.error(CommonMessageConstants.LOG_MSG_EXCEPTION, e.getMessage());
       return false;

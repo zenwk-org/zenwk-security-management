@@ -54,12 +54,33 @@ public final class ConfigUtils {
   public static boolean isPublicEndpoint(String path) {
     String pathResetPassword =
         extractBasePath(HttpMethodResourceEnum.AUTH_RESET_PASSWORD.getResource());
+    String pathUserGetEmail = extractBasePath(HttpMethodResourceEnum.USER_GET_EMAIL.getResource());
 
+    // BUg se debe comparar con metodo user_create porque bloquea los roles admin
     return path.startsWith(HttpMethodResourceEnum.VERIFICATION_TOKEN.getResource())
         || path.startsWith(HttpMethodResourceEnum.SEX_LIST_OPTIONS.getResource())
         || path.equals(HttpMethodResourceEnum.AUTH_LOGIN.getResource())
         || path.equals(HttpMethodResourceEnum.USER_CREATE.getResource())
         || path.startsWith(HttpMethodResourceEnum.ACTUATOR.getResource())
-        || path.startsWith(pathResetPassword);
+        || path.startsWith(pathResetPassword) || path.startsWith(pathUserGetEmail);
+  }
+
+  /**
+   * <p>
+   * <b> CU001_XX </b> Cuando el token csrf expira y se elmnina del navegador, se validad si el
+   * logut se puede aplicar.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param tokenCsrf
+   * @param tokenJwt
+   * @param path
+   * @return
+   */
+  public static boolean isActiveLogout(String tokenCsrf, String tokenJwt, String path) {
+    if (path.equals(HttpMethodResourceEnum.AUTH_LOGOUT.getResource()) && tokenCsrf == null) {
+      return tokenJwt != null;
+    }
+    return true;
   }
 }
