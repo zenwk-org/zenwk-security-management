@@ -3,6 +3,7 @@ package com.alineumsoft.zenwk.security.auth.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -271,7 +272,8 @@ public class AuthService extends ApiRestSecurityHelper {
     List<UserHist> listUserHist = userHistRepository.findLast20ByIdUser(userId);
     if (!listUserHist.isEmpty()) {
       listUserHist = listUserHist.stream()
-          .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword())).toList();
+          .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword()))
+          .collect(Collectors.toList());
       // Si la constraseña se encuentra presente
       if (!listUserHist.isEmpty()) {
         throw new IllegalArgumentException(
