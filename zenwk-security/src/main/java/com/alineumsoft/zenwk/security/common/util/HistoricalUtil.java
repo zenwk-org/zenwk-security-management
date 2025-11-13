@@ -4,6 +4,7 @@ import com.alineumsoft.zenwk.security.common.component.AppContextHolderComponent
 import com.alineumsoft.zenwk.security.common.constants.GeneralConstants;
 import com.alineumsoft.zenwk.security.common.exception.enums.CoreExceptionEnum;
 import com.alineumsoft.zenwk.security.common.hist.enums.HistoricalOperationEnum;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -41,7 +42,7 @@ public final class HistoricalUtil {
 
     } catch (Exception e) {
       log.error(e.getMessage());
-      throw new RuntimeException(CoreExceptionEnum.TECH_COMMON_HISTORICAL_ENTITY_NOT_FOUND
+      throw new EntityNotFoundException(CoreExceptionEnum.TECH_COMMON_HISTORICAL_ENTITY_NOT_FOUND
           .getCodeMessage(entity.getClass().getSimpleName()).concat(e.getMessage()));
     }
   }

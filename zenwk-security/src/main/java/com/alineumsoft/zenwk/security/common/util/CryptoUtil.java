@@ -1,8 +1,13 @@
 package com.alineumsoft.zenwk.security.common.util;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,8 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @class CryptoUtil
  */
 public final class CryptoUtil {
-  private final static PasswordEncoder BCRYPT_ENCODER = new BCryptPasswordEncoder();
-  private final static String AES_ALGORITHM = "AES";
+  private static final PasswordEncoder BCRYPT_ENCODER = new BCryptPasswordEncoder();
+  private static final String AES_ALGORITHM = "AES/GCM/NoPadding";
+
 
   /**
    * <p>
@@ -65,7 +71,8 @@ public final class CryptoUtil {
    * @return
    * @throws Exception
    */
-  public static String encryptAES(String rawText, String secretKey) throws Exception {
+  public static String encryptAES(String rawText, String secretKey) throws NoSuchAlgorithmException,
+      NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
     Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
     SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), AES_ALGORITHM);
     cipher.init(Cipher.ENCRYPT_MODE, keySpec);
@@ -84,7 +91,9 @@ public final class CryptoUtil {
    * @return
    * @throws Exception
    */
-  public static String decryptAES(String encryptedText, String secretKey) throws Exception {
+  public static String decryptAES(String encryptedText, String secretKey)
+      throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+      IllegalBlockSizeException, BadPaddingException {
     Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
     SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), AES_ALGORITHM);
     cipher.init(Cipher.DECRYPT_MODE, keySpec);
@@ -102,7 +111,7 @@ public final class CryptoUtil {
    * @return
    * @throws Exception
    */
-  public static String generateAESSecretKey() throws Exception {
+  public static String generateAESSecretKey() throws NoSuchAlgorithmException {
     KeyGenerator keyGen = KeyGenerator.getInstance(AES_ALGORITHM);
     keyGen.init(128);
     SecretKey secretKey = keyGen.generateKey();
