@@ -1,5 +1,6 @@
 package com.alineumsoft.zenwk.security.auth.definitions;
 
+import org.hibernate.procedure.NoSuchParameterException;
 import com.alineumsoft.zenwk.security.common.exception.enums.CoreExceptionEnum;
 import com.alineumsoft.zenwk.security.common.message.component.MessageSourceAccessorComponent;
 import lombok.Getter;
@@ -46,7 +47,7 @@ public enum AuthEnums {
     try {
       return MessageSourceAccessorComponent.getMessage(key);
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new NoSuchParameterException(
           CoreExceptionEnum.TECH_COMMON_MESSAGE_NOT_FOUND.getCodeMessage(key));
     }
   }

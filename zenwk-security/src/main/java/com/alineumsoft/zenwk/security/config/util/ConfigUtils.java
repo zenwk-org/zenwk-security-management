@@ -2,12 +2,15 @@ package com.alineumsoft.zenwk.security.config.util;
 
 import org.springframework.util.StringUtils;
 import com.alineumsoft.zenwk.security.enums.HttpMethodResourceEnum;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project zenwk-security
  * @class ConfigUtils
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ConfigUtils {
   /**
    * 

@@ -1,5 +1,8 @@
 package com.alineumsoft.zenwk.security.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * <p>
  * Contiene las claves de los mensajes de validación utilizados en los DTOs para anotaciones de
@@ -12,6 +15,7 @@ package com.alineumsoft.zenwk.security.constants;
  * @project security-zenwk
  * @class PersonValidationEnum
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DtoValidationKeys {
   /**
    * PersonDTO

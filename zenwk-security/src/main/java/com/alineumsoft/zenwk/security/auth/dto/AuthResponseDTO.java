@@ -26,6 +26,6 @@ public class AuthResponseDTO implements Serializable {
   /**
    * UserDTO
    */
-  private Long UserId;
+  private Long userId;
 
 }

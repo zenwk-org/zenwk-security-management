@@ -11,7 +11,8 @@ import com.alineumsoft.zenwk.security.person.entity.Person;
 public class FindPersonByIdEvent extends ApplicationEvent {
   private static final long serialVersionUID = 1L;
   private final Long idPerson;
-  private Person person;
+
+  private transient Person person;
 
   /**
    * <p>

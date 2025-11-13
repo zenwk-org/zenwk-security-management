@@ -143,7 +143,7 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
       return csrfDomains.stream().anyMatch(request.getServerName()::contains);
     }
 
-    return csrfDomains.stream().anyMatch(allowed -> source.startsWith(allowed));
+    return csrfDomains.stream().anyMatch(source::startsWith);
   }
 
 
