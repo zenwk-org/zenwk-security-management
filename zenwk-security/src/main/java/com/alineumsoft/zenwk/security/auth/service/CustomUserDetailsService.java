@@ -1,18 +1,15 @@
-package com.alineumsoft.zenwk.security.auth.Service;
+package com.alineumsoft.zenwk.security.auth.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
 import com.alineumsoft.zenwk.security.common.constants.RegexConstants;
+import com.alineumsoft.zenwk.security.entity.Role;
 import com.alineumsoft.zenwk.security.user.service.UserService;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -25,7 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * @class UserDetailsService
  */
 @Service
-public class UserDetailsService
+public class CustomUserDetailsService
     implements org.springframework.security.core.userdetails.UserDetailsService {
   /**
    * Servicio para la gestion de user
@@ -45,7 +42,7 @@ public class UserDetailsService
    * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
    * @param userService
    */
-  public UserDetailsService(UserService userService) {
+  public CustomUserDetailsService(UserService userService) {
     this.userService = userService;
   }
 
@@ -76,14 +73,15 @@ public class UserDetailsService
     }
 
     // Consulta de los roles asociados al usuario
-    List<String> rolesName = userService.findRolesByUsername(username, request).stream()
-        .map(rol -> rol.getName()).collect(Collectors.toList());
+    List<String> rolesName =
+        userService.findRolesByUsername(username, request).stream().map(Role::getName).toList();
 
 
 
     // Se construye UserDetails y se cargan los roles
     userDetail = userBuilder.username(username).password(userEntity.getPassword())
         .authorities(rolesName.toArray(new String[0])).build();
+    startTime.remove();
     // Se retorna el user details que se usara de forma transversal en el sistema
     return userDetail;
   }

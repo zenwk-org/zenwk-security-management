@@ -1,10 +1,8 @@
-package com.alineumsoft.zenwk.security.auth.Service;
+package com.alineumsoft.zenwk.security.auth.service;
 
-import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -96,11 +94,9 @@ public class AuthService extends ApiRestSecurityHelper {
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param inDTO
    * @param request
-   * @param principal
    * @return
    */
-  public AuthResponseDTO authenticate(AuthRequestDTO inDTO, HttpServletRequest request,
-      Principal principal) {
+  public AuthResponseDTO authenticate(AuthRequestDTO inDTO, HttpServletRequest request) {
     AuthResponseDTO outDTO = new AuthResponseDTO();
     String username = null;
     LogSecurity logSec = initializeLog(request, inDTO.getUsername(), getJson(inDTO),
@@ -182,7 +178,7 @@ public class AuthService extends ApiRestSecurityHelper {
    * @param email
    * @return
    */
-  public Boolean ResetPassword(HttpServletRequest request, ResetPasswordDTO dto, String email) {
+  public Boolean resetPassword(HttpServletRequest request, ResetPasswordDTO dto, String email) {
     LogSecurity logSecurity = initializeLog(request, email, getJson(dto), Boolean.class.getName(),
         SecurityActionEnum.AUTH_RESET_PASSWORD.getCode());
     try {
@@ -233,7 +229,7 @@ public class AuthService extends ApiRestSecurityHelper {
    */
   private String validateToken(String email, ResetPasswordDTO dto, Token token) {
     String messageError = "";
-    if (!token.getEmail().equals(token.getEmail())) {
+    if (!token.getEmail().equals(email)) {
       messageError = SecurityExceptionEnum.FUNC_AUTH_EMAIL_NOT_MATCH.getCodeMessage();
     } else if (!CryptoUtil.matchesPassword(dto.getUuid(), token.getUuid())) {
       messageError = SecurityExceptionEnum.FUNC_AUTH_UUID_NOT_MATCH.getCodeMessage();
@@ -275,8 +271,7 @@ public class AuthService extends ApiRestSecurityHelper {
     List<UserHist> listUserHist = userHistRepository.findLast20ByIdUser(userId);
     if (!listUserHist.isEmpty()) {
       listUserHist = listUserHist.stream()
-          .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword()))
-          .collect(Collectors.toList());
+          .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword())).toList();
       // Si la constraseña se encuentra presente
       if (!listUserHist.isEmpty()) {
         throw new IllegalArgumentException(

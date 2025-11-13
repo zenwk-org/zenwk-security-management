@@ -1,13 +1,12 @@
-package com.alineumsoft.zenwk.security.auth.Service;
+package com.alineumsoft.zenwk.security.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -130,8 +129,7 @@ public class PermissionService extends ApiRestSecurityHelper {
   public List<String> listAllowedUrlsForUserRole(String username) {
     User user = userService.findByUsername(username);
     List<RoleUser> rolesUser = userService.findRolesUserByUser(user);
-    List<String> namesRole =
-        rolesUser.stream().map(role -> role.getRole().getName()).collect(Collectors.toList());
+    List<String> namesRole = rolesUser.stream().map(role -> role.getRole().getName()).toList();
     List<String> permissionResources = rolePermRepo.findResourcesByRolName(namesRole);
 
     if (namesRole.contains(RoleEnum.USER.name()) || namesRole.contains(RoleEnum.NEW_USER.name())) {
@@ -140,10 +138,10 @@ public class PermissionService extends ApiRestSecurityHelper {
           url = generatedUrlFromId(user, url);
         }
         return url;
-      }).collect(Collectors.toList());
+      }).toList();
     }
 
-    return permissionResources.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    return permissionResources.stream().filter(Objects::nonNull).toList();
   }
 
   /**
@@ -181,7 +179,8 @@ public class PermissionService extends ApiRestSecurityHelper {
    */
   private Map<PermissionOperationEnum, List<PermissionDTO>> getMapPermissions(
       List<Object[]> listRolPermssions) {
-    Map<PermissionOperationEnum, List<PermissionDTO>> mapRolPermissions = new HashMap<>();
+    Map<PermissionOperationEnum, List<PermissionDTO>> mapRolPermissions =
+        new EnumMap<>(PermissionOperationEnum.class);
     // Mapa con cache de roles
     listRolPermssions.forEach(rolPerm -> {
       PermissionOperationEnum keyMap = PermissionOperationEnum.valueOf(rolPerm[0].toString());
@@ -215,8 +214,6 @@ public class PermissionService extends ApiRestSecurityHelper {
         permission.setCreationUser(username);
         permission = permissionRepo.save(permission);
         saveSuccessLog(HttpStatus.OK.value(), logSec, logSecRepo);
-        // HistoricalUtil.registerHistorical(role, HistoricalOperationEnum.INSERT,
-        // RoleHistService.class);
         return permission.getId();
       } else {
         throw new EntityExistsException(
@@ -250,8 +247,6 @@ public class PermissionService extends ApiRestSecurityHelper {
         permissionTarget.setModificationDate(LocalDateTime.now());
         permissionTarget.setModificationUser(username);
         permissionRepo.save(permissionTarget);
-        // HistoricalUtil.registerHistorical(role, HistoricalOperationEnum.INSERT,
-        // RoleHistService.class);
         saveSuccessLog(HttpStatus.NO_CONTENT.value(), logSec, logSecRepo);
       }
     } catch (RuntimeException e) {
@@ -279,8 +274,6 @@ public class PermissionService extends ApiRestSecurityHelper {
       // Si el permiso ya esta asignado a un rol no se puede elminar, primero se debe
       // desasignar.
       permissionRepo.delete(findPermissionById(id));
-      // HistoricalUtil.registerHistorical(role, HistoricalOperationEnum.INSERT,
-      // RoleHistService.class);
       saveSuccessLog(HttpStatus.NO_CONTENT.value(), logSec, logSecRepo);
     } catch (RuntimeException e) {
       setLogSecurityError(e, logSec);
@@ -390,8 +383,8 @@ public class PermissionService extends ApiRestSecurityHelper {
    * @return
    */
   public PagePermissionDTO getPagePermissionDTO(Page<Permission> pagePermission) {
-    List<PermissionDTO> permissions = pagePermission.stream()
-        .map(permission -> new PermissionDTO(permission)).collect(Collectors.toList());
+    List<PermissionDTO> permissions =
+        pagePermission.stream().map(permission -> new PermissionDTO(permission)).toList();
     PaginatorDTO paginator = new PaginatorDTO(pagePermission.getTotalElements(),
         pagePermission.getTotalPages(), pagePermission.getNumber() + 1);
     return new PagePermissionDTO(permissions, paginator);

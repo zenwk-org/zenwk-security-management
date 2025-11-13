@@ -1,8 +1,7 @@
-package com.alineumsoft.zenwk.security.auth.Service;
+package com.alineumsoft.zenwk.security.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,7 +46,7 @@ public class RoleService extends ApiRestSecurityHelper {
   /**
    * campo name del dto
    */
-  protected static final String ROlE_NAME = "name";
+  protected static final String ROLE_NAME = "name";
   /**
    * Repositorio para Role
    */
@@ -82,8 +81,6 @@ public class RoleService extends ApiRestSecurityHelper {
       role.setCreationDate(LocalDateTime.now());
       role = roleRepository.save(role);
       saveSuccessLog(HttpStatus.OK.value(), logSec, logSecRepo);
-      // HistoricalUtil.registerHistorical(role, HistoricalOperationEnum.INSERT,
-      // RoleHistService.class);
       return role.getId();
     } catch (RuntimeException e) {
       setLogSecurityError(e, logSec);
@@ -115,8 +112,6 @@ public class RoleService extends ApiRestSecurityHelper {
         roleTarget.setModificationUser(username);
         roleTarget.setModificationDate(LocalDateTime.now());
         roleRepository.save(roleTarget);
-        // HistoricalUtil.registerHistorical(role, HistoricalOperationEnum.INSERT,
-        // RoleHistService.class);
       }
       saveSuccessLog(HttpStatus.NO_CONTENT.value(), logSec, logSecRepo);
     } catch (RuntimeException e) {
@@ -170,7 +165,7 @@ public class RoleService extends ApiRestSecurityHelper {
       int pageNumber = getPageNumber(pageable);
       // Consulta paginada y ordenamiento
       Page<Role> pageRoles = roleRepository.findAll(PageRequest.of(pageNumber,
-          pageable.getPageSize(), pageable.getSortOr(Sort.by(Sort.Direction.ASC, ROlE_NAME))));
+          pageable.getPageSize(), pageable.getSortOr(Sort.by(Sort.Direction.ASC, ROLE_NAME))));
       // Se persiste log
       saveSuccessLog(HttpStatus.OK.value(), logSec, logSecRepo);
       // Retorno con los datos paginados
@@ -191,8 +186,7 @@ public class RoleService extends ApiRestSecurityHelper {
    * @return
    */
   public PageRoleDTO getPageRolesDTO(Page<Role> pageRoles) {
-    List<RoleDTO> roles =
-        pageRoles.stream().map(role -> new RoleDTO(role)).collect(Collectors.toList());
+    List<RoleDTO> roles = pageRoles.stream().map(RoleDTO::new).toList();
     PaginatorDTO paginator = new PaginatorDTO(pageRoles.getTotalElements(),
         pageRoles.getTotalPages(), pageRoles.getNumber() + 1);
     return new PageRoleDTO(roles, paginator);
@@ -214,8 +208,6 @@ public class RoleService extends ApiRestSecurityHelper {
     try {
       Role role = findRoleById(roleId);
       roleRepository.delete(role);
-      // HistoricalUtil.registerHistorical(role, HistoricalOperationEnum.INSERT,
-      // RoleHistService.class);
       saveSuccessLog(HttpStatus.NO_CONTENT.value(), logSec, logSecRepo);
     } catch (RuntimeException e) {
       setLogSecurityError(e, logSec);
