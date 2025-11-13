@@ -1,7 +1,6 @@
 package com.alineumsoft.zenwk.security.controller;
 
 
-import java.security.Principal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,12 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.alineumsoft.zenwk.security.auth.Service.AuthService;
 import com.alineumsoft.zenwk.security.auth.definitions.AuthEnums;
 import com.alineumsoft.zenwk.security.auth.dto.AuthRequestDTO;
 import com.alineumsoft.zenwk.security.auth.dto.AuthResponseDTO;
 import com.alineumsoft.zenwk.security.auth.dto.LogoutOutDTO;
 import com.alineumsoft.zenwk.security.auth.dto.ResetPasswordDTO;
+import com.alineumsoft.zenwk.security.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -50,13 +49,12 @@ public class AuthController {
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param request
    * @param servRequest
-   * @param principal
    * @return
    */
   @PostMapping("/login")
   public ResponseEntity<AuthResponseDTO> login(@RequestBody @Validated AuthRequestDTO request,
-      HttpServletRequest servRequest, Principal principal, HttpServletResponse reponse) {
-    AuthResponseDTO authDto = authService.authenticate(request, servRequest, principal);
+      HttpServletRequest servRequest, HttpServletResponse reponse) {
+    AuthResponseDTO authDto = authService.authenticate(request, servRequest);
     // Construcción de la cookie http only para no guardar jwt en sesión o localstorage
     authService.generateCookieHttpOnlyJwt(reponse, authDto.getToken());
     return ResponseEntity.ok(authDto);
@@ -98,7 +96,7 @@ public class AuthController {
   @PostMapping("/reset-password/{email}")
   public ResponseEntity<Boolean> resetPassword(@PathVariable String email,
       @RequestBody @Validated ResetPasswordDTO resetPasswordDTO, HttpServletRequest request) {
-    return ResponseEntity.ok(authService.ResetPassword(request, resetPasswordDTO, email));
+    return ResponseEntity.ok(authService.resetPassword(request, resetPasswordDTO, email));
 
   }
 

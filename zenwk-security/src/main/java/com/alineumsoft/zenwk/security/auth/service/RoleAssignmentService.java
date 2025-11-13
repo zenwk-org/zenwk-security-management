@@ -1,10 +1,9 @@
-package com.alineumsoft.zenwk.security.auth.Service;
+package com.alineumsoft.zenwk.security.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -183,8 +182,7 @@ public class RoleAssignmentService extends ApiRestSecurityHelper {
       user.setId(idUser);
       List<RoleUser> listRoleUser = rolUserRepo.findByUser(user);
       listRoleUser = listRoleUser.stream()
-          .filter(rolUser -> RoleEnum.NEW_USER.name().equals(rolUser.getRole().getName()))
-          .collect(Collectors.toList());
+          .filter(rolUser -> RoleEnum.NEW_USER.name().equals(rolUser.getRole().getName())).toList();
       if (!listRoleUser.isEmpty() && listRoleUser.size() == 1) {
         rolUserRepo.delete(listRoleUser.get(0));
       }
