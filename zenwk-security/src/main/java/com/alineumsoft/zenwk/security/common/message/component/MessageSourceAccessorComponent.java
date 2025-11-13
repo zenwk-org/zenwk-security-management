@@ -3,53 +3,80 @@ package com.alineumsoft.zenwk.security.common.message.component;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
+import lombok.Data;
 
 /**
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project SecurityUser
- * @class MessageSourceAccessor
+ * @class MessageSourceAccessorComponent
  */
 @Component
+@Data
 public class MessageSourceAccessorComponent {
-  private static MessageSource messageSource;
+
+  private final MessageSource messageSource;
 
   /**
    * <p>
-   * <b> Util </b> Constructor
+   * <b> Util </b> Constructor inyectado
    * </p>
-   * 
-   * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
-   * @param messageSource
+   *
+   * @param messageSource Fuente de mensajes internacionalizados.
    */
   public MessageSourceAccessorComponent(MessageSource messageSource) {
-    MessageSourceAccessorComponent.messageSource = messageSource;
+    this.messageSource = messageSource;
+    MessageSourceHolder.set(messageSource);
   }
 
   /**
    * <p>
-   * <b> Util </b> Obtener mensaje con internacionalizacion
+   * <b> Util </b> Obtener mensaje con internacionalización
    * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param key
-   * @return
    */
   public static String getMessage(String key) {
-    return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+    try {
+      return MessageSourceHolder.get().getMessage(key, null, LocaleContextHolder.getLocale());
+    } catch (Exception e) {
+      return key; // fallback seguro
+    }
+
+
+
   }
 
   /**
    * <p>
-   * <b> Util</b> Obtiene un mensaje formateado basado en una clave de mensaje y parámetros
-   * opcionales.
+   * <b> Util</b> Obtener mensaje formateado con parámetros opcionales.
    * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param key
-   * @param params
-   * @return
    */
   public static String getMessage(String key, String... params) {
-    return messageSource.getMessage(key, params, LocaleContextHolder.getLocale());
+    try {
+      return MessageSourceHolder.get().getMessage(key, params, LocaleContextHolder.getLocale());
+    } catch (Exception e) {
+      return key; // fallback seguro
+    }
+
+  }
+
+  /**
+   * Clase interna estática que mantiene una referencia segura al MessageSource.
+   */
+  private static final class MessageSourceHolder {
+    private static MessageSource source;
+
+    private MessageSourceHolder() {}
+
+    static void set(MessageSource messageSource) {
+      if (source == null) {
+        source = messageSource;
+      }
+    }
+
+    static MessageSource get() {
+      if (source == null) {
+        throw new IllegalStateException("MessageSource not initialized yet.");
+      }
+      return source;
+    }
   }
 }

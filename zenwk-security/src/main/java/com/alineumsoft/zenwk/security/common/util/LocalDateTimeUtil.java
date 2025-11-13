@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import com.alineumsoft.zenwk.security.common.message.component.MessageSourceAccessorComponent;
 import com.alineumsoft.zenwk.security.constants.DtoValidationKeys;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -21,6 +23,7 @@ import com.alineumsoft.zenwk.security.constants.DtoValidationKeys;
  * @project security-zenwk
  * @class LocalDateTimeUtil
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LocalDateTimeUtil {
   /**
    * Constante para el formato ISO-8601

@@ -1,5 +1,7 @@
 package com.alineumsoft.zenwk.security.common.exception;
 
+import java.util.concurrent.CompletableFuture;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public abstract class CoreException extends RuntimeException {
    * <p>
    * <b> General </b> CoreException
    * </p>
-   * 
+   *
    * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
    * @param <T>
    * @param message
@@ -33,32 +35,45 @@ public abstract class CoreException extends RuntimeException {
    * @param cause
    * @param repository
    * @param entity
+   * @throws NoSuchMethodException
    */
-  public <T> CoreException(String message, Throwable cause, JpaRepository<T, ?> repository,
+  protected <T> CoreException(String message, Throwable cause, JpaRepository<T, ?> repository,
       T entity) {
     super(message, cause);
-    saveLog(repository, entity, message);
+    try {
+      CoreException self = (CoreException) AopContext.currentProxy();
+      self.saveLog(repository, entity, message);
+    } catch (IllegalStateException ex) {
+      // Fallback sin llamada directa al método asíncrono
+      CompletableFuture.runAsync(() -> {
+        try {
+          saveLog(repository, entity, message);
+        } catch (Exception e) {
+          log.error("Error en fallback async: {}", e.getMessage());
+        }
+      });
+    }
   }
 
   /**
    * <p>
    * <b> General </b> Periste la excepcion
    * </p>
-   * 
+   *
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param <T>
    * @param repository
    * @param entity
+   * @throws NoSuchMethodException
    */
   @Async
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  private <T> void saveLog(JpaRepository<T, ?> repository, T entity, String message) {
+  protected <T> void saveLog(JpaRepository<T, ?> repository, T entity, String message) {
     if (repository != null && entity != null) {
       try {
         entity.getClass().getMethod(METHOD_MESSAGE_ERROR, String.class).invoke(entity, message);
       } catch (Exception e) {
         log.error(e.getMessage());
-        throw new RuntimeException(e);
       }
       repository.save(entity);
     }

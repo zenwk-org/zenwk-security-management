@@ -1,5 +1,6 @@
 package com.alineumsoft.zenwk.security.common.exception.enums;
 
+import org.hibernate.procedure.NoSuchParameterException;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.message.component.MessageSourceAccessorComponent;
 import lombok.Getter;
@@ -58,7 +59,8 @@ public enum CoreExceptionEnum {
     try {
       return MessageSourceAccessorComponent.getMessage(messageKey);
     } catch (Exception e) {
-      throw new RuntimeException(CoreExceptionEnum.TECH_COMMON_MESSAGE_NOT_FOUND.getCodeMessage());
+      throw new NoSuchParameterException(
+          CoreExceptionEnum.TECH_COMMON_MESSAGE_NOT_FOUND.getCodeMessage());
     }
   }
 
@@ -76,7 +78,7 @@ public enum CoreExceptionEnum {
     try {
       return MessageSourceAccessorComponent.getMessage(messageKey, params);
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new NoSuchParameterException(
           CoreExceptionEnum.TECH_COMMON_MESSAGE_NOT_FOUND.getCodeMessage(messageKey));
     }
   }

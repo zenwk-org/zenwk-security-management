@@ -1,5 +1,8 @@
 package com.alineumsoft.zenwk.security.common.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * <p>
  * Constantes utilizadas en la autenticacion y autorizacion
@@ -9,6 +12,7 @@ package com.alineumsoft.zenwk.security.common.constants;
  * @project security-zenwk
  * @class AuthConfig
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AuthConfigConstants {
   /**
    * class: JwtProvider
@@ -26,9 +30,9 @@ public final class AuthConfigConstants {
   /**
    * class: PermissionService
    */
-  public final static String ID = "{id}";
-  public final static String URL_USER = "user";
-  public final static String URL_PERSON = "person";
+  public static final String ID = "{id}";
+  public static final String URL_USER = "user";
+  public static final String URL_PERSON = "person";
   /**
    * class: JwtAuthenticationFilter
    */
@@ -37,13 +41,13 @@ public final class AuthConfigConstants {
   /**
    * class: CsrfValidationFilter
    */
-  public static String X_XSRF_TOKEN = "X-XSRF-TOKEN";
-  public static String X_USER_EMAIL = "X-USER-EMAIL";
+  public static final String X_XSRF_TOKEN = "X-XSRF-TOKEN";
+  public static final String X_USER_EMAIL = "X-USER-EMAIL";
   /**
    * class: CsrfController
    */
-  public static String XCSRF_TOKEN = "XCSRF-TOKEN";
-  public static String ZENWK_JWT = "ZENWK_JWT";
+  public static final String XCSRF_TOKEN = "XCSRF-TOKEN";
+  public static final String ZENWK_JWT = "ZENWK_JWT";
   // 10m
   public static final long TOKEN_RENEW_THRESHOLD_SECONDS = 600;
 
