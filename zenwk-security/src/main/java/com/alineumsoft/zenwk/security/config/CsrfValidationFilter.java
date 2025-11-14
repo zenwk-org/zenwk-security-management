@@ -3,7 +3,6 @@ package com.alineumsoft.zenwk.security.config;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -84,11 +83,6 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
     String email = jwtProvider.extractUserEmail(tokenJwt);
 
 
-    if (!isValidOrigin(request)) {
-      log.warn("CSRF blocked - Invalid origin or referer: {}", request.getHeader("Origin"));
-      response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid CSRF origin");
-      return;
-    }
 
     // Se da el acceso si el token csrf es valido
     if (validateCsrfToken(response, tokenCsrf, tokenJwt, email, request)) {
@@ -119,33 +113,6 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
     }
     return Optional.empty();
   }
-
-
-
-  /**
-   * 
-   * <p>
-   * <b> CU001_XX </b> Validación de ORIGIN / REFERER. Valida que el Origin o Referer pertenezca a
-   * la lista de dominios confiables
-   * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param request
-   * @return
-   */
-  private boolean isValidOrigin(HttpServletRequest request) {
-    List<String> csrfDomains = Arrays.asList(cookieDomain.split(","));
-    String origin = request.getHeader("Origin");
-    String referer = request.getHeader("Referer");
-
-    String source = (origin != null) ? origin : referer;
-    if (source == null) {
-      return csrfDomains.stream().anyMatch(request.getServerName()::contains);
-    }
-
-    return csrfDomains.stream().anyMatch(source::startsWith);
-  }
-
 
   /**
    * 
