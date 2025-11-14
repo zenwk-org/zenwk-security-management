@@ -7,7 +7,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -143,7 +142,7 @@ public class PermissionService extends ApiRestSecurityHelper {
       }).toList();
     }
     // noinspection SonarLint(java:S6204)
-    return permissionResources.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    return permissionResources.stream().filter(Objects::nonNull).toList();
   }
 
   /**
