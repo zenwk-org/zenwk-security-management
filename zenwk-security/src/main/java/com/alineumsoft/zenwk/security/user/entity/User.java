@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project SecurityUser
  */
-// NOSONAR: Entity and historical entity intentionally share attribute definitions
 @Entity
 @Table(name = "sec_user")
 @Data
