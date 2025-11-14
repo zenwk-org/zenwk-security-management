@@ -18,13 +18,13 @@ public interface PersonRepository
   /**
    * JPQL que consulta el id del usuario, recibe el id de la persona
    */
-  public final static String JPQL_FIND_USER_ID =
+  public static final String JPQL_FIND_USER_ID =
       "SELECT u.id FROM User u  LEFT JOIN u.person p WHERE p.id = :idPerson ";
 
   /**
    * JPQL que consulta la persona por medio del userId
    */
-  public final static String JPQL_FIND_PERSON_FROM_USER_ID =
+  public static final String JPQL_FIND_PERSON_FROM_USER_ID =
       "SELECT p FROM User u  LEFT JOIN u.person p WHERE u.id = :userId ";
 
   /**

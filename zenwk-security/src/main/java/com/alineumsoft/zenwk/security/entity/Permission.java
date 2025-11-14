@@ -92,7 +92,7 @@ public class Permission {
    * @param dto
    */
   public Permission(PermissionDTO dto) {
-    this.name = dto.getName().toString();
+    this.name = dto.getName();
     this.description = dto.getDescription();
     this.method = dto.getMethod();
     this.resource = dto.getResource();
