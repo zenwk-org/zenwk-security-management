@@ -17,7 +17,6 @@ import lombok.Data;
  * @project SecurityUser
  * @class UserState
  */
-@SuppressWarnings("java:S2975")
 @Entity
 @Table(name = "sec_person")
 @Data

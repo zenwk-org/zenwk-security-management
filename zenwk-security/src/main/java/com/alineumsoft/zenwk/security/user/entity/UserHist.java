@@ -17,7 +17,7 @@ import lombok.Data;
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project SecurityUser
  */
-@SuppressWarnings("java:S2975")
+// NOSONAR: Entity and historical entity intentionally share attribute definitions
 @Entity
 @Table(name = "sec_user_hist")
 @Data
