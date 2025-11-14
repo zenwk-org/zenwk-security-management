@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "sec_user")
 @Data
 @NoArgsConstructor
+@SuppressWarnings("java:S2975")
 public class User {
   /**
    * id
