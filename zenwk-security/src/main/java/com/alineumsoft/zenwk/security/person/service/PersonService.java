@@ -537,7 +537,7 @@ public class PersonService extends ApiRestSecurityHelper {
     if (idUser != null) {
       // Evento para la eliminacion del usuario
       DeleteUserEvent eventDelete =
-          new DeleteUserEvent(this, Long.parseLong(idUser.toString()), userDetails);
+          new DeleteUserEvent(this, Long.parseLong(sanitize(idUser.toString())), userDetails);
       eventPublisher.publishEvent(eventDelete);
     }
   }
