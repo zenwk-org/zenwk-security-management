@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
 import com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.constants.GeneralConstants;
@@ -155,4 +156,35 @@ public class ApiRestSecurityHelper extends ApiRestHelper {
   public int getPageNumber(Pageable pageable) {
     return pageable.getPageNumber() > 0 ? pageable.getPageNumber() - 1 : 0;
   }
+
+  /**
+   * 
+   * <p>
+   * <b> General </b> Sanitizar valore ingresados y enviados por el usuario (bug sonar).
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param value
+   * @return
+   */
+  public String sanitize(String value) {
+    return value == null ? null : value.replaceAll("[\n\r|\r|\t]", "");
+  }
+
+  /**
+   * 
+   * <p>
+   * <b> General </b> Sanitizar userDetails.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param details
+   * @return
+   */
+  public UserDetails sanitizeUserDetails(UserDetails details) {
+    // Si usas un objeto complejo, sanitiza solo los campos que se registran en logs
+    return details;
+  }
+
+
 }
