@@ -20,6 +20,7 @@ import lombok.Data;
 @Entity
 @Table(name = "sec_user_hist")
 @Data
+@SuppressWarnings("java:S2975")
 public class UserHist {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

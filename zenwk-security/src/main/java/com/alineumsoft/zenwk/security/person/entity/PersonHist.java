@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "sec_person_hist")
 @NoArgsConstructor
+@SuppressWarnings("java:S2975")
 public class PersonHist {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
