@@ -6,12 +6,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import com.alineumsoft.zenwk.security.common.constants.RegexConstants;
 import com.alineumsoft.zenwk.security.entity.Role;
 import com.alineumsoft.zenwk.security.user.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * <p>
@@ -86,19 +83,6 @@ public class CustomUserDetailsService
     return userDetail;
   }
 
-  /**
-   * <p>
-   * <b> CU001_Seguridad_Creacion_Usuario </b> Obtiene la solicitud HTTP actual.
-   * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @return
-   */
-  private HttpServletRequest getCurrentHttpRequest() {
-    ServletRequestAttributes attrs =
-        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-    return attrs != null ? attrs.getRequest() : null;
-  }
 
   /**
    * <p>

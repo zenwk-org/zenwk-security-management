@@ -4,7 +4,6 @@ import java.awt.FontFormatException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -693,9 +692,7 @@ public class UserService extends ApiRestSecurityHelper {
    * @return
    */
   private List<Role> findRolesByRoleUser(List<RoleUser> rolesUser) {
-    // NOSONAR java:S6204
-    List<Long> idsRoles =
-        rolesUser.stream().map(roleUser -> roleUser.getRole().getId()).collect(Collectors.toList());
+    List<Long> idsRoles = rolesUser.stream().map(roleUser -> roleUser.getRole().getId()).toList();
     List<Role> roles = roleAsignmentService.findRoleByIds(idsRoles);
     if (roles == null || roles.isEmpty()) {
       throw new EntityNotFoundException(
