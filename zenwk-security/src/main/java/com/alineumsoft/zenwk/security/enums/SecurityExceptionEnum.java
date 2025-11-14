@@ -1,5 +1,6 @@
 package com.alineumsoft.zenwk.security.enums;
 
+import org.hibernate.procedure.NoSuchParameterException;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.exception.enums.CoreExceptionEnum;
 import com.alineumsoft.zenwk.security.common.message.component.MessageSourceAccessorComponent;
@@ -109,7 +110,7 @@ public enum SecurityExceptionEnum {
     try {
       return MessageSourceAccessorComponent.getMessage(key);
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new NoSuchParameterException(
           CoreExceptionEnum.TECH_COMMON_MESSAGE_NOT_FOUND.getCodeMessage(key));
     }
   }
@@ -122,7 +123,7 @@ public enum SecurityExceptionEnum {
     try {
       return MessageSourceAccessorComponent.getMessage(key, params);
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new NoSuchParameterException(
           CoreExceptionEnum.TECH_COMMON_MESSAGE_NOT_FOUND.getCodeMessage(key));
     }
   }

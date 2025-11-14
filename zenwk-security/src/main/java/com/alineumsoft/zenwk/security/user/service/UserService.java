@@ -202,7 +202,7 @@ public class UserService extends ApiRestSecurityHelper {
     // Se ejecuta la transaccion
     Boolean result = templateTx.execute(transaction -> {
       try {
-        return deleteUserRecord(idUser, logSecurity, user, userDetails);
+        return deleteUserRecord(idUser, logSecurity, user);
       } catch (RuntimeException e) {
         transaction.setRollbackOnly();
         throw new EntityNotFoundException(getMessageSQLException(e));
@@ -224,11 +224,9 @@ public class UserService extends ApiRestSecurityHelper {
    * @param idUser
    * @param logSecurity
    * @param user
-   * @param userDetails
    * @return
    */
-  private Boolean deleteUserRecord(Long idUser, LogSecurity logSecurity, User user,
-      UserDetails userDetails) {
+  private Boolean deleteUserRecord(Long idUser, LogSecurity logSecurity, User user) {
     // Eliminacion de los permisos del usuario
     roleAsignmentService.deleteRoleUserByIdUser(idUser);
     userRepository.deleteById(idUser);
@@ -695,6 +693,7 @@ public class UserService extends ApiRestSecurityHelper {
    * @return
    */
   private List<Role> findRolesByRoleUser(List<RoleUser> rolesUser) {
+    // NOSONAR java:S6204
     List<Long> idsRoles =
         rolesUser.stream().map(roleUser -> roleUser.getRole().getId()).collect(Collectors.toList());
     List<Role> roles = roleAsignmentService.findRoleByIds(idsRoles);

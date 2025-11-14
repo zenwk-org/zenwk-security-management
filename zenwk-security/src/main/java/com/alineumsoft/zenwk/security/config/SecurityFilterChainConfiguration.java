@@ -209,7 +209,6 @@ public class SecurityFilterChainConfiguration {
     // Aplicar permisos basados en roles y operaciones
     addAuthorizationForOperation(request, maRolPermissions);
 
-    // Todo lo demás requiere autenticación
     request.anyRequest().authenticated();
   }
 
