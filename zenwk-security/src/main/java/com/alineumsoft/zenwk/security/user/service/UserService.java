@@ -594,8 +594,8 @@ public class UserService extends ApiRestSecurityHelper {
   private void deletePersonEvent(UserDetails userDetails, Long idUser) {
     Object idPerson = userRepository.findIdPersonByIdUser(idUser);
     if (idPerson != null) {
-      PersonDeleteEvent event =
-          new PersonDeleteEvent(this, Long.parseLong(idPerson.toString()), userDetails);
+      PersonDeleteEvent event = new PersonDeleteEvent(this,
+          Long.parseLong(sanitize(idPerson.toString())), sanitizeUserDetails(userDetails));
       eventPublisher.publishEvent(event);
     }
   }
