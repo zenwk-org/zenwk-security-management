@@ -567,18 +567,17 @@ public class UserService extends ApiRestSecurityHelper {
     user.setState(UserStateEnum.INCOMPLETE_PERFIL);
     user.setCreationDate(LocalDateTime.now());
     // validacion si el usuario ya existe
-    if (!isExistUser(user)) {
-      user = userRepository.save(user);
-      // Persistencia en log
-      HistoricalUtil.registerHistorical(user, HistoricalOperationEnum.INSERT,
-          UserHistService.class);
-      // Pesistencia de log
-      saveSuccessLog(HttpStatus.CREATED.value(), logSecurity, logSecurityUserRespository);
-      // Se crea rol por defecto cuando apenas se crea el usuario
-      RoleUserDTO roleUserDTO =
-          new RoleUserDTO(null, RoleEnum.NEW_USER.name(), user.getId(), dto.getUsername());
-      roleAsignmentService.createRoleUser(null, roleUserDTO);
-    }
+    isExistUser(user);
+    user = userRepository.save(user);
+    // Persistencia en log
+    HistoricalUtil.registerHistorical(user, HistoricalOperationEnum.INSERT, UserHistService.class);
+    // Pesistencia de log
+    saveSuccessLog(HttpStatus.CREATED.value(), logSecurity, logSecurityUserRespository);
+    // Se crea rol por defecto cuando apenas se crea el usuario
+    RoleUserDTO roleUserDTO =
+        new RoleUserDTO(null, RoleEnum.NEW_USER.name(), user.getId(), dto.getUsername());
+    roleAsignmentService.createRoleUser(null, roleUserDTO);
+
     return user;
   }
 
@@ -766,7 +765,7 @@ public class UserService extends ApiRestSecurityHelper {
         return true;
       }
     } catch (EntityNotFoundException e) {
-      e.printStackTrace();
+      log.error("Unexpected error", e);
     } catch (Exception e) {
       log.error("UserService.findByEmail - ", e.getMessage());
       setLogSecurityError((RuntimeException) e, logSecurity);
