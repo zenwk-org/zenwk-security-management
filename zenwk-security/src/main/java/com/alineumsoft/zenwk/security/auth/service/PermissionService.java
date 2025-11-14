@@ -131,8 +131,7 @@ public class PermissionService extends ApiRestSecurityHelper {
     User user = userService.findByUsername(username);
     List<RoleUser> rolesUser = userService.findRolesUserByUser(user);
     // noinspection SonarLint(java:S6204)
-    List<String> namesRole =
-        rolesUser.stream().map(role -> role.getRole().getName()).collect(Collectors.toList());
+    List<String> namesRole = rolesUser.stream().map(role -> role.getRole().getName()).toList();
     List<String> permissionResources = rolePermRepo.findResourcesByRolName(namesRole);
     // noinspection SonarLint(java:S6204)
     if (namesRole.contains(RoleEnum.USER.name()) || namesRole.contains(RoleEnum.NEW_USER.name())) {
@@ -141,7 +140,7 @@ public class PermissionService extends ApiRestSecurityHelper {
           url = generatedUrlFromId(user, url);
         }
         return url;
-      }).collect(Collectors.toList());
+      }).toList();
     }
     // noinspection SonarLint(java:S6204)
     return permissionResources.stream().filter(Objects::nonNull).collect(Collectors.toList());
@@ -386,8 +385,7 @@ public class PermissionService extends ApiRestSecurityHelper {
    * @return
    */
   public PagePermissionDTO getPagePermissionDTO(Page<Permission> pagePermission) {
-    List<PermissionDTO> permissions = pagePermission.stream()
-        .map(permission -> new PermissionDTO(permission)).collect(Collectors.toList());
+    List<PermissionDTO> permissions = pagePermission.stream().map(PermissionDTO::new).toList();
     PaginatorDTO paginator = new PaginatorDTO(pagePermission.getTotalElements(),
         pagePermission.getTotalPages(), pagePermission.getNumber() + 1);
     return new PagePermissionDTO(permissions, paginator);

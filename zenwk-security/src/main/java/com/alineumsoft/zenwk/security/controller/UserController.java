@@ -165,8 +165,7 @@ public class UserController {
    */
   @GetMapping("/email/{email}")
   public ResponseEntity<Boolean> findUserByEmail(@PathVariable String email,
-      HttpServletRequest request, UriComponentsBuilder uriCB,
-      @AuthenticationPrincipal UserDetails userDetails) {
+      HttpServletRequest request, UriComponentsBuilder uriCB) {
     return ResponseEntity.ok(userService.findByEmail(email, request));
   }
 }
