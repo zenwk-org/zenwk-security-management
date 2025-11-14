@@ -130,10 +130,11 @@ public class PermissionService extends ApiRestSecurityHelper {
   public List<String> listAllowedUrlsForUserRole(String username) {
     User user = userService.findByUsername(username);
     List<RoleUser> rolesUser = userService.findRolesUserByUser(user);
+    // noinspection SonarLint(java:S6204)
     List<String> namesRole =
         rolesUser.stream().map(role -> role.getRole().getName()).collect(Collectors.toList());
     List<String> permissionResources = rolePermRepo.findResourcesByRolName(namesRole);
-
+    // noinspection SonarLint(java:S6204)
     if (namesRole.contains(RoleEnum.USER.name()) || namesRole.contains(RoleEnum.NEW_USER.name())) {
       permissionResources = permissionResources.stream().map(url -> {
         if (url.contains(AuthConfigConstants.ID)) {
@@ -142,7 +143,7 @@ public class PermissionService extends ApiRestSecurityHelper {
         return url;
       }).collect(Collectors.toList());
     }
-
+    // noinspection SonarLint(java:S6204)
     return permissionResources.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 

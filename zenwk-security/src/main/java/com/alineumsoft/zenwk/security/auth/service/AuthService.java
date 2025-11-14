@@ -271,6 +271,7 @@ public class AuthService extends ApiRestSecurityHelper {
     // Validar que el password no sea el anterior ingresado
     List<UserHist> listUserHist = userHistRepository.findLast20ByIdUser(userId);
     if (!listUserHist.isEmpty()) {
+      // NOSONAR java:S6204
       listUserHist = listUserHist.stream()
           .filter(hist -> CryptoUtil.matchesPassword(password, hist.getPassword()))
           .collect(Collectors.toList());
