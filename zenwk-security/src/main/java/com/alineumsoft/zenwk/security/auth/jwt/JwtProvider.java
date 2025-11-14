@@ -116,8 +116,8 @@ public class JwtProvider extends ApiRestSecurityHelper {
       Long idUser, UserStateEnum userState, String email) {
     // Se agrega valor extra al calim, para agregar roles
     Map<String, Object> extraClaim = new HashMap<>();
-    List<String> listRoles = userDetails.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+    List<String> listRoles =
+        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     // Roles del usuario
     extraClaim.put(JWT_ROLES, listRoles);
     // Se agregan los permisos por operacion
@@ -162,8 +162,7 @@ public class JwtProvider extends ApiRestSecurityHelper {
 
   /**
    * <p>
-   * <b> CU001_Seguridad_Creacion_Usuario </b> Se usa la misma clave para verificar que el token no
-   * ha sido alterado y extrae todo el claims
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Extracción del claims a partir de dl token jwt
    * </p>
    * 
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
