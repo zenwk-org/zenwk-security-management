@@ -21,11 +21,11 @@ import lombok.NoArgsConstructor;
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project SecurityUser
  */
+@SuppressWarnings("java:S2975")
 @Entity
 @Table(name = "sec_user")
 @Data
 @NoArgsConstructor
-@SuppressWarnings("java:S2975")
 public class User {
   /**
    * id

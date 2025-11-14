@@ -17,10 +17,10 @@ import lombok.Data;
  * @author <a href="mailto:alineumsoft@gmail.com">C. Alegria</a>
  * @project SecurityUser
  */
+@SuppressWarnings("java:S2975")
 @Entity
 @Table(name = "sec_user_hist")
 @Data
-@SuppressWarnings("java:S2975")
 public class UserHist {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

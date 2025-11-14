@@ -13,11 +13,11 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@SuppressWarnings("java:S2975")
 @Data
 @Entity
 @Table(name = "sec_person_hist")
 @NoArgsConstructor
-@SuppressWarnings("java:S2975")
 public class PersonHist {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
