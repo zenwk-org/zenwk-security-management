@@ -177,6 +177,7 @@ public class RoleAssignmentService extends ApiRestSecurityHelper {
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
    * @param idUser
    */
+  @SuppressWarnings("java:S6204")
   private void deleteRolNewUser(Long idUser) {
     try {
       User user = new User();
