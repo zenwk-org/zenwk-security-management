@@ -1,10 +1,12 @@
 package com.alineumsoft.zenwk.security.common.helper;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
@@ -181,9 +183,54 @@ public class ApiRestSecurityHelper extends ApiRestHelper {
    * @param details
    * @return
    */
-  public UserDetails sanitizeUserDetails(UserDetails details) {
-    // Si usas un objeto complejo, sanitiza solo los campos que se registran en logs
-    return details;
+  public UserDetails sanitizeUserDetails(UserDetails userDetails) {
+    if (userDetails == null) {
+      return null;
+    }
+
+    String safeUsername = sanitize(userDetails.getUsername());
+
+    Collection<? extends GrantedAuthority> safeAuthorities = userDetails.getAuthorities().stream()
+        .map(a -> (GrantedAuthority) () -> sanitize(a.getAuthority())).toList();
+
+    return new UserDetails() {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public Collection<? extends GrantedAuthority> getAuthorities() {
+        return safeAuthorities;
+      }
+
+      @Override
+      public String getPassword() {
+        return null;
+      }
+
+      @Override
+      public String getUsername() {
+        return safeUsername;
+      }
+
+      @Override
+      public boolean isAccountNonExpired() {
+        return userDetails.isAccountNonExpired();
+      }
+
+      @Override
+      public boolean isAccountNonLocked() {
+        return userDetails.isAccountNonLocked();
+      }
+
+      @Override
+      public boolean isCredentialsNonExpired() {
+        return userDetails.isCredentialsNonExpired();
+      }
+
+      @Override
+      public boolean isEnabled() {
+        return userDetails.isEnabled();
+      }
+    };
   }
 
 
