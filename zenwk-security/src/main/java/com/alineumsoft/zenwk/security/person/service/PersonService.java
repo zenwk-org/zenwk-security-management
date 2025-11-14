@@ -3,7 +3,7 @@ package com.alineumsoft.zenwk.security.person.service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -98,7 +98,9 @@ public class PersonService extends ApiRestSecurityHelper {
       // Validacion funcional de la pesona a registrar
       validateUser(dto, request);
       Person person = createPersonTx(dto, logSecurity, userDetails);
-      return person.getId();
+
+      return Objects.requireNonNull(person).getId();
+
     } catch (RuntimeException e) {
       setLogSecurityError(e, logSecurity);
       if (isFunctionalException(e)) {
@@ -217,7 +219,7 @@ public class PersonService extends ApiRestSecurityHelper {
         updateUserEvent(dto.getIdUser(), person, userDetails);
         return person;
       } catch (ConstraintViolationException e) {
-        throw new RuntimeException(e.getMessage());
+        throw new IllegalArgumentException(e.getMessage());
       }
     });
   }
@@ -242,10 +244,10 @@ public class PersonService extends ApiRestSecurityHelper {
     Person personTarget =
         personRepo.findById(idPerson).orElseThrow(() -> new EntityNotFoundException(
             SecurityExceptionEnum.FUNC_PERSON_NOT_FOUND.getCodeMessage(idPerson.toString())));
-    return templateTx.execute(transaction -> {
+    Boolean result = templateTx.execute(transaction -> {
       try {
         if (ObjectUpdaterUtil.updateDataEqualObject(getPersonSource(dto), personTarget)) {
-          updatePersonRecord(personTarget, name, logSecurity);
+          updatePersonRecord(personTarget, name);
         }
         saveSuccessLog(HttpStatus.NO_CONTENT.value(), logSecurity, logSecUserRespo);
         return true;
@@ -254,6 +256,11 @@ public class PersonService extends ApiRestSecurityHelper {
         throw new IllegalArgumentException(getMessageSQLException(e));
       }
     });
+
+    if (result == null) {
+      throw new IllegalStateException("Transaction result is null for updatePersonTx");
+    }
+    return result;
   }
 
   /**
@@ -272,7 +279,7 @@ public class PersonService extends ApiRestSecurityHelper {
   private boolean deletePersonTx(Long idPerson, LogSecurity logSecurity, UserDetails userDetails,
       boolean invokedByListener) {
     // Se ejecuta la transaccion
-    boolean isDelete = templateTx.execute(transaction -> {
+    Boolean isDelete = templateTx.execute(transaction -> {
       try {
         return deletePersonRecord(idPerson, logSecurity);
       } catch (RuntimeException e) {
@@ -283,6 +290,9 @@ public class PersonService extends ApiRestSecurityHelper {
     // ELminacion del usuario a travez del evento, si aplica
     if (invokedByListener) {
       deleteUserEvent(idPerson, userDetails);
+    }
+    if (isDelete == null) {
+      throw new IllegalStateException("Transaction result is null for deletePersonTx");
     }
     return isDelete;
   }
@@ -303,15 +313,14 @@ public class PersonService extends ApiRestSecurityHelper {
     person.setUserCreation(logSecurity.getUserCreation());
     person.setCreationDate(LocalDateTime.now());
     // Si la person no existe se persiste
-    if (!isExistPerson(person)) {
-      person = personRepo.save(person);
-      // Persistencia de logs
-      HistoricalUtil.registerHistorical(person, HistoricalOperationEnum.INSERT,
-          PersonHistService.class);
-      saveSuccessLog(HttpStatus.CREATED.value(), logSecurity, logSecUserRespo);
-    }
-    return person;
+    isNotExistPerson(person);
+    person = personRepo.save(person);
+    // Persistencia de logs
+    HistoricalUtil.registerHistorical(person, HistoricalOperationEnum.INSERT,
+        PersonHistService.class);
+    saveSuccessLog(HttpStatus.CREATED.value(), logSecurity, logSecUserRespo);
 
+    return person;
   }
 
   /**
@@ -326,8 +335,7 @@ public class PersonService extends ApiRestSecurityHelper {
    * 
    * @return
    */
-  private void updatePersonRecord(Person personTarget, String userModification,
-      LogSecurity logSecurity) {
+  private void updatePersonRecord(Person personTarget, String userModification) {
     personTarget.setUserModification(userModification);
     personTarget.setModificationDate(LocalDateTime.now());
     personRepo.save(personTarget);
@@ -379,7 +387,7 @@ public class PersonService extends ApiRestSecurityHelper {
       try {
         person.setProfilePicture(dto.getProfilePicture());
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new IllegalArgumentException(e);
       }
     }
     person.setFirstName(dto.getFirstName());
@@ -508,8 +516,7 @@ public class PersonService extends ApiRestSecurityHelper {
    * @return
    */
   private PagePersonDTO getFindAll(Page<Person> pagePerson, LogSecurity logSecurity) {
-    List<CreatePersonDTO> listPeople =
-        pagePerson.stream().map(person -> new CreatePersonDTO(person)).collect(Collectors.toList());
+    List<CreatePersonDTO> listPeople = pagePerson.stream().map(CreatePersonDTO::new).toList();
     saveSuccessLog(HttpStatus.OK.value(), logSecurity, logSecUserRespo);
     return new PagePersonDTO(listPeople, new PaginatorDTO(pagePerson.getTotalElements(),
         pagePerson.getTotalPages(), pagePerson.getNumber() + 1));
@@ -562,13 +569,13 @@ public class PersonService extends ApiRestSecurityHelper {
    * @param person
    * @return
    */
-  private boolean isExistPerson(Person person) {
+  private boolean isNotExistPerson(Person person) {
     if (personRepo.existsByFirstNameAndMiddleNameAndLastNameAndMiddleLastNameAndDateOfBirth(
         person.getFirstName(), person.getMiddleName(), person.getLastName(),
         person.getMiddleLastName(), person.getDateOfBirth())) {
       throw new IllegalArgumentException(SecurityExceptionEnum.FUNC_PERSON_EXIST.getCodeMessage());
     }
-    return false;
+    return true;
   }
 
 
@@ -621,7 +628,7 @@ public class PersonService extends ApiRestSecurityHelper {
       person.setProfilePicture(file.getBytes());
       personRepo.save(person);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException(e);
 
     }
 

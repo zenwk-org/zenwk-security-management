@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  * @class ObjectUpdater
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ObjectUpdaterUtil {
   /**
    * Campos descartados
@@ -33,7 +36,8 @@ public final class ObjectUpdaterUtil {
    * @return Retorna {@code true} si se actualizó algún dato (incluyendo asignaciones a
    *         {@code null}), {@code false} en caso contrario.
    */
-  static public <T> boolean updateDataEqualObject(T source, T target) {
+  @SuppressWarnings("java:S3011")
+  public static <T> boolean updateDataEqualObject(T source, T target) {
     boolean isPersist = false;
     validateObjects(source, target);
 

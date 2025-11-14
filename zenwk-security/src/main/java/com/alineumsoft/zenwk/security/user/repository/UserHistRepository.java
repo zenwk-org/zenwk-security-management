@@ -1,3 +1,4 @@
+
 package com.alineumsoft.zenwk.security.user.repository;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface UserHistRepository extends JpaRepository<UserHist, Long> {
   /**
    * JPQL que consulta el id del usuario, recibe el id de la persona
    */
-  public final static String JPQL_FIND_HIST_USER_BY_ID =
+  public static final String JPQL_FIND_HIST_USER_BY_ID =
       "SELECT u FROM UserHist u WHERE u.idUser = :idUser ORDER BY u.id DESC ";
 
   /**

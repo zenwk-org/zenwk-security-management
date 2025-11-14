@@ -15,7 +15,7 @@ public class UpdateUserEvent extends ApplicationEvent {
   private final Long idUser;
   private final UserDTO dto;
   private final UserDetails userDetails;
-  private final Person person;
+  private final transient Person person;
   private boolean isUpdate;
 
   /**

@@ -39,7 +39,7 @@ public class UserHistService {
    * @param user
    * @param userHist
    */
-  public void saveHistorical(User user, HistoricalOperationEnum OperationType) {
+  public void saveHistorical(User user, HistoricalOperationEnum operationType) {
     Long idPerson = Optional.ofNullable(user.getPerson()).map(Person::getId).orElse(null);
     UserHist historical = new UserHist();
     historical.setIdUser(user.getId());
@@ -52,7 +52,7 @@ public class UserHistService {
     historical.setUserModification(user.getUserModification());
     historical.setCreationDate(user.getCreationDate());
     historical.setModificationDate(user.getModificationDate());
-    historical.setOperation(OperationType);
+    historical.setOperation(operationType);
     historical.setHistCreationDate(LocalDateTime.now());
     userHistRepository.save(historical);
   }

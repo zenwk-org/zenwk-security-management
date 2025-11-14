@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "sec_user")
 @Data
 @NoArgsConstructor
-public class User implements Cloneable {
+public class User {
   /**
    * id
    */
@@ -81,18 +81,6 @@ public class User implements Cloneable {
   @JoinColumn(name = "secuseidperson")
   private Person person;
 
-  /**
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @return
-   * @see java.lang.Object#clone()
-   */
-  @Override
-  public User clone() {
-    try {
-      return (User) super.clone();
-    } catch (CloneNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
-  }
+
 
 }

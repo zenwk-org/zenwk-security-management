@@ -1,4 +1,4 @@
-package com.alineumsoft.zenwk.security.config;
+package com.alineumsoft.zenwk.security.test;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,7 +15,7 @@ import com.alineumsoft.zenwk.security.enums.RoleEnum;
 @Configuration
 @Profile("test")
 @ConditionalOnProperty(name = "security.test-config.enabled", havingValue = "true")
-public class TestSecurityConfig {
+public class SecurityConfigTest {
   private static final String USER_NAME_PROPERTY = "${spring.security.user.name}";
   private static final String USER_PASSWORD_PROPERTY = "${spring.security.user.password}";
 

@@ -17,12 +17,12 @@ public interface UserRepository extends JpaRepository<User, Long>, CrudRepositor
   /**
    * JPQL que consulta un usuario a partir del id de la persona
    */
-  public final static String JPQL_FIND_USER_BY_PERSON_ID =
+  public static final String JPQL_FIND_USER_BY_PERSON_ID =
       "SELECT u FROM User u WHERE u.person.id = :idPerson";
   /**
    * JPQL que consulta el id de la persona, recibe el id del usuario
    */
-  public final static String JPQL_FIND_PERSON_ID =
+  public static final String JPQL_FIND_PERSON_ID =
       "SELECT p.id FROM User u  LEFT JOIN u.person p WHERE u.id = :idUser";
 
   /**
