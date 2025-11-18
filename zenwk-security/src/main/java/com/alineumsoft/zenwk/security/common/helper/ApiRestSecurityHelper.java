@@ -63,6 +63,7 @@ public class ApiRestSecurityHelper extends ApiRestHelper {
     return regLog;
   }
 
+
   /**
    * <p>
    * <b> CU001_Seguridad_Creación_Usuario </b> Actualizacion generica en caso de error
