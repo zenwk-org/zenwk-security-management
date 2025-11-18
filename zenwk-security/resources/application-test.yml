@@ -1,0 +1,33 @@
+server:
+  port: 0
+  ssl:
+    enabled: false
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:zenwk_test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+  mail:
+    host: disabled
+  rabbitmq:
+    host: disabled
+    port: 0
+  cloud:
+    config:
+      enabled: false
+  main:
+    allow-bean-definition-overriding: true
