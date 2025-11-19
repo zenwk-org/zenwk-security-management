@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,26 +19,32 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.alineumsoft.zenwk.security.auth.dto.AuthRequestDTO;
 import com.alineumsoft.zenwk.security.auth.dto.AuthResponseDTO;
+import com.alineumsoft.zenwk.security.auth.dto.ResetPasswordDTO;
+import com.alineumsoft.zenwk.security.auth.entity.Token;
 import com.alineumsoft.zenwk.security.auth.jwt.JwtProvider;
 import com.alineumsoft.zenwk.security.auth.repository.TokenRepository;
 import com.alineumsoft.zenwk.security.auth.service.AuthService;
 import com.alineumsoft.zenwk.security.auth.service.PermissionService;
 import com.alineumsoft.zenwk.security.common.exception.FunctionalException;
 import com.alineumsoft.zenwk.security.common.exception.TechnicalException;
+import com.alineumsoft.zenwk.security.common.util.CryptoUtil;
 import com.alineumsoft.zenwk.security.entity.LogSecurity;
 import com.alineumsoft.zenwk.security.enums.UserStateEnum;
 import com.alineumsoft.zenwk.security.repository.LogSecurityRepository;
 import com.alineumsoft.zenwk.security.user.entity.User;
+import com.alineumsoft.zenwk.security.user.entity.UserHist;
 import com.alineumsoft.zenwk.security.user.repository.UserHistRepository;
 import com.alineumsoft.zenwk.security.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 
 class AuthServiceTest {
 
@@ -162,4 +170,102 @@ class AuthServiceTest {
 
     assertThrows(TechnicalException.class, () -> authService.refreshJwt(request, userDetails));
   }
+
+  @Test
+  @DisplayName("resetPassword: restablecimiento exitoso")
+  void resetPassword_Success() {
+    ResetPasswordDTO dto = new ResetPasswordDTO();
+    dto.setPassword("newPass");
+    dto.setUuid("uuid");
+    dto.setCodeToken("code");
+
+    User user = new User();
+    user.setId(3L);
+    user.setEmail("mail@test.com");
+
+    Token token = new Token();
+    token.setEmail("mail@test.com");
+    token.setUuid(CryptoUtil.encryptPassword("uuid"));
+    token.setCode(CryptoUtil.encryptPassword("code"));
+    token.setExpirationDate(LocalDateTime.now().plusMinutes(10)); // No vencido
+
+    when(tokenRepository.findByEmail("mail@test.com")).thenReturn(Optional.of(token));
+    when(userService.findByEmail("mail@test.com")).thenReturn(user);
+    when(userHistRepository.findLast20ByIdUser(3L)).thenReturn(List.of());
+    when(userService.updateUser(any(), eq(3L), any(), any(), any())).thenReturn(true);
+
+    Boolean result = authService.resetPassword(request, dto, "mail@test.com");
+    assertEquals(true, result);
+  }
+
+  @Test
+  @DisplayName("resetPassword: token inválido lanza TechnicalException")
+  void resetPassword_InvalidToken() {
+    ResetPasswordDTO dto = new ResetPasswordDTO();
+    dto.setPassword("1234");
+    dto.setUuid("bad");
+    dto.setCodeToken("bad");
+
+    Token token = new Token();
+    token.setEmail("mail@test.com");
+    token.setUuid(CryptoUtil.encryptPassword("uuid"));
+    token.setCode(CryptoUtil.encryptPassword("code"));
+    token.setExpirationDate(LocalDateTime.now().plusMinutes(5));
+
+    when(tokenRepository.findByEmail(any())).thenReturn(Optional.of(token));
+
+    assertThrows(TechnicalException.class,
+        () -> authService.resetPassword(request, dto, "mail@test.com"));
+  }
+
+  @Test
+  @DisplayName("getToken: email no encontrado lanza EntityNotFoundException")
+  void getToken_NotFound() {
+    when(tokenRepository.findByEmail("x@gmail.com")).thenReturn(Optional.empty());
+    assertThrows(TechnicalException.class,
+        () -> authService.resetPassword(request, new ResetPasswordDTO(), "x@gmail.com"));
+  }
+
+  @Test
+  @DisplayName("validatePassword: contraseña reutilizada lanza IllegalArgumentException")
+  void validatePassword_Reused() {
+    UserHist hist = new UserHist();
+    hist.setPassword(CryptoUtil.encryptPassword("testpass")); // Se reutiliza
+
+    when(userHistRepository.findLast20ByIdUser(7L)).thenReturn(List.of(hist));
+
+    ResetPasswordDTO dto = new ResetPasswordDTO();
+    dto.setPassword("testpass");
+    dto.setUuid("uuid");
+    dto.setCodeToken("code");
+
+    Token token = new Token();
+    token.setEmail("mail2@test.com");
+    token.setUuid(CryptoUtil.encryptPassword("uuid"));
+    token.setCode(CryptoUtil.encryptPassword("code"));
+    token.setExpirationDate(LocalDateTime.now().plusMinutes(2));
+
+    when(tokenRepository.findByEmail("mail@test.com")).thenReturn(Optional.of(token));
+    when(userService.findByEmail("mail@test.com")).thenReturn(new User());
+
+    assertThrows(TechnicalException.class,
+        () -> authService.resetPassword(request, dto, "mail@test.com"));
+  }
+
+  @Test
+  @DisplayName("generateCookieHttpOnlyJwt: agrega cookie correctamente")
+  void generateCookieHttpOnlyJwt_Success() {
+    HttpServletResponse responseMock = mock(HttpServletResponse.class);
+    authService.generateCookieHttpOnlyJwt(responseMock, "jwt123");
+    verify(responseMock).addHeader(eq(HttpHeaders.SET_COOKIE), anyString());
+  }
+
+  @Test
+  @DisplayName("disabledCookieHttpOnlyCsrfToken: elimina CSRF cookie")
+  void disabledCookieHttpOnlyCsrfToken_Success() {
+    HttpServletResponse responseMock = mock(HttpServletResponse.class);
+    authService.disabledCookieHttpOnlyCsrfToken(responseMock);
+    verify(responseMock).addHeader(eq(HttpHeaders.SET_COOKIE), anyString());
+  }
+
 }

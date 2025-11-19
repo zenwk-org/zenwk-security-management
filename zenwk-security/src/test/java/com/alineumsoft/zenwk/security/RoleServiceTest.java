@@ -17,6 +17,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -30,6 +32,7 @@ import com.alineumsoft.zenwk.security.auth.dto.RoleDTO;
 import com.alineumsoft.zenwk.security.auth.service.RoleService;
 import com.alineumsoft.zenwk.security.common.exception.FunctionalException;
 import com.alineumsoft.zenwk.security.common.exception.TechnicalException;
+import com.alineumsoft.zenwk.security.common.util.ObjectUpdaterUtil;
 import com.alineumsoft.zenwk.security.entity.LogSecurity;
 import com.alineumsoft.zenwk.security.entity.Role;
 import com.alineumsoft.zenwk.security.repository.LogSecurityRepository;
@@ -155,4 +158,94 @@ class RoleServiceTest {
     assertEquals(2, result.getRoles().size());
     assertEquals(2, result.getTotalElements());
   }
+
+  @Test
+  @DisplayName("updateRole: NO hay cambios, no debe guardar")
+  void updateRole_NoChanges() {
+    RoleDTO dto = new RoleDTO();
+    dto.setName("ADMIN");
+    dto.setDescription("Administrador");
+
+    Role role = new Role("ADMIN", "Administrador"); // mismos valores
+    role.setId(1L);
+
+    when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+    // forzar que no hay cambios
+    try (MockedStatic<ObjectUpdaterUtil> mock = Mockito.mockStatic(ObjectUpdaterUtil.class)) {
+      mock.when(() -> ObjectUpdaterUtil.updateDataEqualObject(any(), any())).thenReturn(false);
+
+      roleService.updateRole(1L, dto, request, userDetails);
+      verify(roleRepository).findById(1L); // solo debe buscar
+      verify(roleRepository, Mockito.never()).save(any()); // NO guardarlo
+    }
+  }
+
+  @Test
+  @DisplayName("findRoleById con request: éxito")
+  void findRoleById_WithRequest_Success() {
+    Role role = new Role("ADMIN", "Desc");
+    role.setId(1L);
+    when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+    RoleDTO result = roleService.findRoleById(1L, request, userDetails);
+    assertNotNull(result);
+    assertEquals("ADMIN", result.getName());
+  }
+
+  @Test
+  @DisplayName("findRoleByName: éxito")
+  void findRoleByName_Success() {
+    Role role = new Role("USER", "Desc");
+    when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
+
+    Role result = roleService.findRoleByName("USER");
+    assertEquals("USER", result.getName());
+  }
+
+
+  @Test
+  @DisplayName("findRoleByIds: retorna lista")
+  void findRoleByIds_Success() {
+    List<Role> roles = List.of(new Role("R1", "D1"), new Role("R2", "D2"));
+    when(roleRepository.findByIds(List.of(1L, 2L))).thenReturn(roles);
+
+    List<Role> result = roleService.findRoleByIds(List.of(1L, 2L));
+    assertEquals(2, result.size());
+  }
+
+  @Test
+  @DisplayName("deleteRole: eliminación exitosa")
+  void deleteRole_Success() {
+    Role role = new Role("USER", "Desc");
+    when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+    assertDoesNotThrow(() -> roleService.deleteRole(1L, request, userDetails));
+    verify(roleRepository).delete(role); // se debe eliminar
+  }
+
+  @Test
+  @DisplayName("findAllRoles: error lanza FunctionalException")
+  void findAllRoles_Error() {
+    Pageable pageable = PageRequest.of(0, 5);
+    when(roleRepository.findAll(any(PageRequest.class)))
+        .thenThrow(new RuntimeException("db error"));
+
+    assertThrows(FunctionalException.class,
+        () -> roleService.findAllRoles(pageable, request, userDetails));
+  }
+
+  @Test
+  @DisplayName("getRolesForPermission: obtiene roles con permiso")
+  void getRolesForPermission_Success() {
+    Pageable pageable = PageRequest.of(0, 5);
+    Page<Role> page = new PageImpl<>(List.of(new Role("ADMIN", "X")));
+    when(roleRepository.getAllRolesForPermissionId(any(), any())).thenReturn(page);
+
+    Page<Role> result = roleService.getRolesForPermission(pageable, 99L, 1);
+    assertEquals(1, result.getTotalElements());
+  }
+
+
+
 }
