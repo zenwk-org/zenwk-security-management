@@ -444,7 +444,8 @@ public class UserService extends ApiRestSecurityHelper {
     LogSecurity logSecurity = initializeLog(request, userDetails.getUsername(), notBody, notBody,
         SecurityActionEnum.USER_ME_JWT.getCode());
     try {
-      String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
+      String token =
+          jwtProvider.extractJwtFromCookie(request).orElseThrow(EntityNotFoundException::new);
       Long idUser = jwtProvider.extractIdUser(token);
       User user = userRepository.findById(idUser).orElseThrow(() -> new EntityNotFoundException(
           SecurityExceptionEnum.FUNC_USER_NOT_FOUND_ID.getCodeMessage(idUser.toString())));
