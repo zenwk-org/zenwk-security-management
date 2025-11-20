@@ -115,7 +115,8 @@ class UserServiceTest {
   @AfterEach
   void teardown() {
     if (mockedHistorical != null) {
-      mockedHistorical.close(); // Cierra el mock estático
+      // Cierra el mock estático
+      mockedHistorical.close();
     }
   }
 

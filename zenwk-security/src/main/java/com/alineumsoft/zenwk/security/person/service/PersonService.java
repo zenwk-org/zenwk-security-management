@@ -121,7 +121,8 @@ public class PersonService extends ApiRestSecurityHelper {
    * @param request
    */
   private void validateUser(CreatePersonDTO dto, HttpServletRequest request) {
-    String token = jwtProvider.extractJwtFromCookie(request).orElseThrow();
+    String token =
+        jwtProvider.extractJwtFromCookie(request).orElseThrow(EntityNotFoundException::new);
     Long idUser = jwtProvider.extractIdUser(token);
     List<String> roles = jwtProvider.extractAuthorities(token);
     UserStateEnum userState = jwtProvider.extractUserState(token);
@@ -373,7 +374,7 @@ public class PersonService extends ApiRestSecurityHelper {
    * @param dto
    * @return
    */
-  private Person getPersonSource(PersonDTO dto) {
+  public Person getPersonSource(PersonDTO dto) {
     Person person = new Person();
 
     // Recuperamos el sexo.
@@ -569,7 +570,7 @@ public class PersonService extends ApiRestSecurityHelper {
    * @param person
    * @return
    */
-  private boolean isNotExistPerson(Person person) {
+  public boolean isNotExistPerson(Person person) {
     if (personRepo.existsByFirstNameAndMiddleNameAndLastNameAndMiddleLastNameAndDateOfBirth(
         person.getFirstName(), person.getMiddleName(), person.getLastName(),
         person.getMiddleLastName(), person.getDateOfBirth())) {
