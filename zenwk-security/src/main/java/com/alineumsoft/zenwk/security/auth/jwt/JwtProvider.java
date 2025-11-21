@@ -396,7 +396,7 @@ public class JwtProvider extends ApiRestSecurityHelper {
    * @param errorDTO
    * @throws IOException
    */
-  private void writeResponse(HttpServletResponse response, int status, ErrorResponseDTO errorDTO)
+  public void writeResponse(HttpServletResponse response, int status, ErrorResponseDTO errorDTO)
       throws IOException {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(status);
@@ -417,7 +417,7 @@ public class JwtProvider extends ApiRestSecurityHelper {
    * @param error
    * @return
    */
-  private LogSecurity setLogSecurity(String username, HttpServletRequest request, int status,
+  public LogSecurity setLogSecurity(String username, HttpServletRequest request, int status,
       String error) {
     LogSecurity logSecurity = initializeLog(request, username, CommonMessageConstants.NOT_FOUND,
         CommonMessageConstants.NOT_FOUND, getSecurityActionCodeFromRequest(request));

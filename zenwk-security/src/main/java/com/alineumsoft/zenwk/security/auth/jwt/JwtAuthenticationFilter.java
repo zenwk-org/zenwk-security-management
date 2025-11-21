@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
    *      jakarta.servlet.http.HttpServletResponse, jakarta.servlet.FilterChain)
    */
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+  public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     String username = null;
     try {
@@ -127,7 +127,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
    * @return
    * @throws IOException
    */
-  private boolean validateAuthenticate(HttpServletRequest request, HttpServletResponse response,
+  public boolean validateAuthenticate(HttpServletRequest request, HttpServletResponse response,
       String token, String username) throws IOException {
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = jwtProvider.extractUserDetails(token).orElse(null);
@@ -181,7 +181,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
    * @param request
    * @return
    */
-  private boolean validateRolUser(String token, HttpServletRequest request) {
+  public boolean validateRolUser(String token, HttpServletRequest request) {
     List<String> roles = jwtProvider.extractAuthorities(token);
     String uri = request.getRequestURI();
     // Si el el rol user esta presente se inspeccionan que las uri correpondan a los
