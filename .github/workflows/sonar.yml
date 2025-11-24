@@ -9,7 +9,7 @@ on:
 
 jobs:
   sonar:
-    uses: zenwk-org/zenwk-workflows/.github/workflows/sonarcloud.yml@main
+    uses: zenwk-org/zenwk-workflows/.github/workflows/sonar-services-java.yml@main
     with:
       projectKey: ZenWkZen_zenwk-security-management
       organization: zenwk
