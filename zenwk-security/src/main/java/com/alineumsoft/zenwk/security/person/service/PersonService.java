@@ -339,6 +339,7 @@ public class PersonService extends ApiRestSecurityHelper {
   private void updatePersonRecord(Person personTarget, String userModification) {
     personTarget.setUserModification(userModification);
     personTarget.setModificationDate(LocalDateTime.now());
+    isNotExistPersonForEdit(personTarget);
     personRepo.save(personTarget);
     HistoricalUtil.registerHistorical(personTarget, HistoricalOperationEnum.UPDATE,
         PersonHistService.class);
@@ -580,6 +581,7 @@ public class PersonService extends ApiRestSecurityHelper {
   }
 
 
+
   /**
    * <p>
    * <b>CU001_Seguridad_Creacion_Usuario </b> Gestiona la carga de la foto de perfil de usuario.
@@ -633,5 +635,25 @@ public class PersonService extends ApiRestSecurityHelper {
 
     }
 
+  }
+
+
+  /**
+   * <p>
+   * <b> CU001_Seguridad_Creacion_Usuario </b> Valida si el request usado para la creacion de la
+   * persona ya existe, se usa solo en la edición.Excluye el mismo registro.
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param person
+   * @return
+   */
+  public boolean isNotExistPersonForEdit(Person person) {
+    if (personRepo.existsByFirstNameAndMiddleNameAndLastNameAndMiddleLastNameAndDateOfBirthAndIdNot(
+        person.getFirstName(), person.getMiddleName(), person.getLastName(),
+        person.getMiddleLastName(), person.getDateOfBirth(), person.getId())) {
+      throw new IllegalArgumentException(SecurityExceptionEnum.FUNC_PERSON_EXIST.getCodeMessage());
+    }
+    return true;
   }
 }

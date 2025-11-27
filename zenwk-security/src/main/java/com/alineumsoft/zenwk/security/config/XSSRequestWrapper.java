@@ -34,6 +34,10 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
    */
   @Override
   public String getParameter(String name) {
+    // No sanitizar el password ni campos sensibles
+    if ("password".equalsIgnoreCase(name)) {
+      return super.getParameter(name);
+    }
     return sanitize(super.getParameter(name));
   }
 
@@ -49,6 +53,11 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
     if (values == null)
       return new String[0];
 
+    // Exclusión directa
+    if ("password".equalsIgnoreCase(name)) {
+      return values;
+    }
+
     String[] sanitized = new String[values.length];
     for (int i = 0; i < values.length; i++) {
       sanitized[i] = sanitize(values[i]);
@@ -56,6 +65,17 @@ public class XSSRequestWrapper extends HttpServletRequestWrapper {
     return sanitized;
   }
 
+
+  /**
+   * 
+   * <p>
+   * <b> CU001_XX </b> XXX
+   * </p>
+   * 
+   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
+   * @param input
+   * @return
+   */
   private String sanitize(String input) {
     if (input == null)
       return null;

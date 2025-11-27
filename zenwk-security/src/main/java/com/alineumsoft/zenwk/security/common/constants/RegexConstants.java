@@ -20,9 +20,12 @@ public final class RegexConstants {
   public static final String EMAIL = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
   // Teléfonos con o sin prefijo internacional.
   public static final String PHONE_NUMBER = "^[+]?[0-9]{7,15}$";
-  // Minimo 8 caracteres, al menos una letra, un número y un carácter especial
+  /**
+   * Regex para validar contraseñas: - Mínimo 8 y máximo 64 caracteres - Al menos una letra - Al
+   * menos un número - Al menos un carácter especial seguro
+   */
   public static final String PASSWORD =
-      "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+      "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+=\\[\\]{};':\"\\\\|,.<>/?\\-]).{8,64}$";
   // Fecha en formato YYYY-MM-DD.
   public static final String DATE_ISO_8601 = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}";
   // Solo numeros.
