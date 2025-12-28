@@ -334,8 +334,9 @@ public class AuthService extends ApiRestSecurityHelper {
    * @param token
    */
   public void generateCookieHttpOnlyJwt(HttpServletResponse response, String token) {
-    ResponseCookie cookie = ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, token).httpOnly(true)
-        .secure(true).sameSite("None").path("/").maxAge(Duration.ofHours(24)).build();
+    ResponseCookie cookie =
+        ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, token).httpOnly(true).secure(true)
+            .sameSite("None").path("/").maxAge(Duration.ofHours(24)).domain(".zenwk.com").build();
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 
@@ -349,8 +350,9 @@ public class AuthService extends ApiRestSecurityHelper {
    * @param token
    */
   public void disabledCookieHttpOnlyJwt(HttpServletResponse response) {
-    ResponseCookie cookie = ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, "").httpOnly(true)
-        .secure(true).sameSite("None").path("/").maxAge(Duration.ofHours(0)).build();
+    ResponseCookie cookie =
+        ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, "").httpOnly(true).secure(true)
+            .sameSite("None").path("/").maxAge(Duration.ofHours(0)).domain(".zenwk.com").build();
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 
