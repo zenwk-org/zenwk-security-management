@@ -14,7 +14,7 @@ spring:
     import: ${SPRING_CONFIG_COMMON_APPLICATION:optional:configserver:http://localhost:8086}
 
 cors:
-  allowed-origins: ${CORS_AUTH_ALLOWED_ORIGINS}
+  allowed-origins: ${CORS_AUTH_ALLOWED_ORIGINS:}
 
 security:
   # Deshablitar prod / hablitar autenticación perfil de pruebas
