@@ -29,7 +29,7 @@ security:
     enabled: true
   # Nombres explicitos del dominio
   csrf:
-    cookie-domain: ${COOKIE_DOMAIN}
+    cookie-domain: ${COOKIE_DOMAIN:}
 
 validation:
   regex:

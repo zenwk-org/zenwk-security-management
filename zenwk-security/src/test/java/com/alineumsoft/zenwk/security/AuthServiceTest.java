@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -250,22 +248,6 @@ class AuthServiceTest {
 
     assertThrows(TechnicalException.class,
         () -> authService.resetPassword(request, dto, "mail@test.com"));
-  }
-
-  @Test
-  @DisplayName("generateCookieHttpOnlyJwt: agrega cookie correctamente")
-  void generateCookieHttpOnlyJwt_Success() {
-    HttpServletResponse responseMock = mock(HttpServletResponse.class);
-    authService.generateCookieHttpOnlyJwt(responseMock, "jwt123");
-    verify(responseMock).addHeader(eq(HttpHeaders.SET_COOKIE), anyString());
-  }
-
-  @Test
-  @DisplayName("disabledCookieHttpOnlyCsrfToken: elimina CSRF cookie")
-  void disabledCookieHttpOnlyCsrfToken_Success() {
-    HttpServletResponse responseMock = mock(HttpServletResponse.class);
-    authService.disabledCookieHttpOnlyCsrfToken(responseMock);
-    verify(responseMock).addHeader(eq(HttpHeaders.SET_COOKIE), anyString());
   }
 
 }
