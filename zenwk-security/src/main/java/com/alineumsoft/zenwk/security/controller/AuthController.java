@@ -17,6 +17,7 @@ import com.alineumsoft.zenwk.security.auth.dto.AuthResponseDTO;
 import com.alineumsoft.zenwk.security.auth.dto.LogoutOutDTO;
 import com.alineumsoft.zenwk.security.auth.dto.ResetPasswordDTO;
 import com.alineumsoft.zenwk.security.auth.service.AuthService;
+import com.alineumsoft.zenwk.security.config.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,11 @@ public class AuthController {
    * Servicio para auth
    */
   private final AuthService authService;
+  /**
+   * Utilidad para cookie
+   */
+  private final CookieUtil cookieUtil;
+
 
   /**
    * 
@@ -53,10 +59,10 @@ public class AuthController {
    */
   @PostMapping("/login")
   public ResponseEntity<AuthResponseDTO> login(@RequestBody @Validated AuthRequestDTO request,
-      HttpServletRequest servRequest, HttpServletResponse reponse) {
+      HttpServletRequest servRequest, HttpServletResponse response) {
     AuthResponseDTO authDto = authService.authenticate(request, servRequest);
     // Construcción de la cookie http only para no guardar jwt en sesión o localstorage
-    authService.generateCookieHttpOnlyJwt(reponse, authDto.getToken());
+    cookieUtil.generateCookieJwt(response, authDto.getToken());
     return ResponseEntity.ok(authDto);
   }
 
@@ -76,8 +82,8 @@ public class AuthController {
   public ResponseEntity<LogoutOutDTO> logout(HttpServletRequest request,
       @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
     authService.logout(request, userDetails);
-    authService.disabledCookieHttpOnlyJwt(response);
-    authService.disabledCookieHttpOnlyCsrfToken(response);
+    cookieUtil.disableCookieJwt(response);
+    cookieUtil.disabledCookieCsrf(response);
     return ResponseEntity.ok(new LogoutOutDTO(AuthEnums.AUTH_LOGOUT_SUCCES.getMessage()));
   }
 
@@ -116,7 +122,7 @@ public class AuthController {
   public ResponseEntity<AuthResponseDTO> refreshJwt(HttpServletRequest request,
       @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
     AuthResponseDTO authDto = authService.refreshJwt(request, userDetails);
-    authService.generateCookieHttpOnlyJwt(response, authDto.getToken());
+    cookieUtil.generateCookieJwt(response, authDto.getToken());
     return ResponseEntity.ok(authDto);
   }
 

@@ -1,11 +1,8 @@
 package com.alineumsoft.zenwk.security.auth.service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +15,6 @@ import com.alineumsoft.zenwk.security.auth.dto.ResetPasswordDTO;
 import com.alineumsoft.zenwk.security.auth.entity.Token;
 import com.alineumsoft.zenwk.security.auth.jwt.JwtProvider;
 import com.alineumsoft.zenwk.security.auth.repository.TokenRepository;
-import com.alineumsoft.zenwk.security.common.constants.AuthConfigConstants;
 import com.alineumsoft.zenwk.security.common.constants.CommonMessageConstants;
 import com.alineumsoft.zenwk.security.common.exception.FunctionalException;
 import com.alineumsoft.zenwk.security.common.exception.TechnicalException;
@@ -36,7 +32,6 @@ import com.alineumsoft.zenwk.security.user.repository.UserHistRepository;
 import com.alineumsoft.zenwk.security.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -321,54 +316,6 @@ public class AuthService extends ApiRestSecurityHelper {
       setLogSecurityError(e, logSec);
       throw new TechnicalException(e.getMessage(), e.getCause(), logSecRepo, logSec);
     }
-  }
-
-  /**
-   * 
-   * <p>
-   * <b> CU001_XX </b> Método general que genera la cookie httpOnly para el token JWT
-   * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param response
-   * @param token
-   */
-  public void generateCookieHttpOnlyJwt(HttpServletResponse response, String token) {
-    ResponseCookie cookie =
-        ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, token).httpOnly(true).secure(true)
-            .sameSite("None").path("/").maxAge(Duration.ofHours(24)).domain(".zenwk.com").build();
-    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-  }
-
-  /**
-   * 
-   * <p>
-   * <b> CU001_XX </b> Método general que inactiva la cookie httpOnly para el token JWT
-   * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param token
-   */
-  public void disabledCookieHttpOnlyJwt(HttpServletResponse response) {
-    ResponseCookie cookie =
-        ResponseCookie.from(AuthConfigConstants.ZENWK_JWT, "").httpOnly(true).secure(true)
-            .sameSite("None").path("/").maxAge(Duration.ofHours(0)).domain(".zenwk.com").build();
-    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-  }
-
-  /**
-   * 
-   * <p>
-   * <b> CU001_XX </b> Método general que inactiva la cookie httpOnly para el token CSRF
-   * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param token
-   */
-  public void disabledCookieHttpOnlyCsrfToken(HttpServletResponse response) {
-    ResponseCookie cookie = ResponseCookie.from(AuthConfigConstants.XCSRF_TOKEN, "").httpOnly(true)
-        .secure(true).sameSite("None").path("/").maxAge(Duration.ofHours(0)).build();
-    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 
 }

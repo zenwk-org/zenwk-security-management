@@ -1,14 +1,9 @@
 package com.alineumsoft.zenwk.security.config;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.alineumsoft.zenwk.security.auth.jwt.JwtProvider;
@@ -19,6 +14,7 @@ import com.alineumsoft.zenwk.security.common.enums.PermissionOperationEnum;
 import com.alineumsoft.zenwk.security.common.exception.enums.CoreExceptionEnum;
 import com.alineumsoft.zenwk.security.common.service.CsrfTokenCommonService;
 import com.alineumsoft.zenwk.security.config.util.ConfigUtils;
+import com.alineumsoft.zenwk.security.config.util.CookieUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -48,8 +44,10 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
    */
   public final CsrfTokenCommonService csrfTokenCommonService;
 
-  @Value("${security.csrf.cookie-domain}")
-  private String cookieDomain;
+  /**
+   * Utilidad para cookie
+   */
+  private final CookieUtil cookieUtil;
 
   /**
    * Metodo exlcuidos del verificación
@@ -154,7 +152,7 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
 
         if (isNearExpiration(csrfToken.getExpirationDate())) {
           log.debug("Renovando token CSRF automáticamente, expiración próxima.");
-          generateToken(response, request, tokenDto);
+          refreshToken(response, request, tokenDto);
         }
 
         return true;
@@ -178,41 +176,12 @@ public class CsrfValidationFilter extends OncePerRequestFilter {
    * @param request
    * @param tokenDto
    */
-  private void generateToken(HttpServletResponse response, HttpServletRequest request,
+  private void refreshToken(HttpServletResponse response, HttpServletRequest request,
       TokenDTO tokenDto) {
     TokenDTO newToken = csrfTokenCommonService.generateCsrfToken(tokenDto, request, null);
-    String domain = resolveDomain(request.getServerName());
-
-    ResponseCookie csrfCookie = ResponseCookie
-        .from(AuthConfigConstants.XCSRF_TOKEN, newToken.getCode()).httpOnly(true).path("/")
-        .secure(true).sameSite("None").maxAge(Duration.ofHours(2)).domain(domain).build();
-
-    response.addHeader(HttpHeaders.SET_COOKIE, csrfCookie.toString());
+    cookieUtil.generateCookieCsrf(response, newToken.getCode());
   }
 
-
-  /**
-   * 
-   * <p>
-   * <b> CU001_XX </b> Determina el dominio correcto basado en la configuración y el dominio del
-   * request
-   * </p>
-   * 
-   * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
-   * @param requestDomain
-   * @return
-   */
-  private String resolveDomain(String requestDomain) {
-    List<String> csrfDomains =
-        (cookieDomain != null && !cookieDomain.isEmpty()) ? List.of(cookieDomain.split(","))
-            : List.of(requestDomain);
-
-    if (csrfDomains == null || csrfDomains.isEmpty()) {
-      return requestDomain;
-    }
-
-    return csrfDomains.stream().filter(requestDomain::contains).findFirst().orElse(requestDomain);
-  }
 
   /**
    * 
