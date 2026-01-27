@@ -1,5 +1,5 @@
 server:
-  port: ${SEVER_PORT:8087}
+  port: ${SECURIY_PORT:8087}
   ssl:
     enabled: true
     key-store: ${KEY_STORE:classpath:http://localhost:6600/keystore/dev/zenwk_dev.keystore}
