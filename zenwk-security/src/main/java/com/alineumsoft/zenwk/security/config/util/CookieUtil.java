@@ -82,7 +82,10 @@ public class CookieUtil {
   /**
    * 
    * <p>
-   * <b> CU001_XX </b> Método general que inactiva la cookie httpOnly para el token CSRF
+   * <b> CU001_XX </b> Método general que inactiva la cookie httpOnly para el token CSRF FROM
+   * eclipse-temurin:17 WORKDIR /app COPY build/libs/*.jar app.jar EXPOSE 8086 # Agregar opciones
+   * para permitir acceso a métricas (actuator/health) del sistema ENV JAVA_OPTS="--add-opens
+   * java.base/jdk.internal.platform=ALL-UNNAMED" ENTRYPOINT ["java", "-jar", "app.jar"]
    * </p>
    * 
    * @author <a href="alineumsoft@gmail.com">C. Alegria</a>
