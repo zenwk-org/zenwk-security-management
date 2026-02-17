@@ -15,10 +15,10 @@ permissions:
 jobs:
   build:
     uses: zenwk-org/zenwk-workflows/.github/workflows/docker-build-push-common.yml@main
-    secrets:
-      GRADLE_PLUGIN_TOKEN: ${{ secrets.GRADLE_PLUGIN_TOKEN }}
     with:
       service_name: zenwk-security
       image_name: zenwk-org/zenwk-security
       dockerfile_path: zenwk-security/src/main/resources/docker/Dockerfile
       build_context: zenwk-security
+    secrets:
+      GRADLE_PLUGIN_TOKEN: ${{ secrets.GRADLE_PLUGIN_TOKEN }} # paso explícito de secretos
