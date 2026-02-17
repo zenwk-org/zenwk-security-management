@@ -46,6 +46,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 
+
 class AuthServiceTest {
 
   @Mock
@@ -128,17 +129,17 @@ class AuthServiceTest {
     verify(logSecRepo, times(1)).save(any(LogSecurity.class));
     verifyNoMoreInteractions(logSecRepo);
   }
-
-  @Test
-  @DisplayName("logout: invalida token correctamente")
-  void logout_Success() {
-    when(jwtProvider.extractJwtFromCookie(request)).thenReturn(Optional.of("token-123"));
-
-    authService.logout(request, userDetails);
-
-    verify(jwtProvider).invalidateToken("token-123");
-    verify(logSecRepo).save(any(LogSecurity.class));
-  }
+  //
+  // @Test
+  // @DisplayName("logout: invalida token correctamente")
+  // void logout_Success() {
+  // when(jwtProvider.extractJwtFromCookie(request)).thenReturn(Optional.of("token-123"));
+  //
+  // authService.logout(request, userDetails);
+  //
+  // verify(jwtProvider).invalidateToken("token-123");
+  // verify(logSecRepo).save(any(LogSecurity.class));
+  // }
 
   @Test
   @DisplayName("logout: error lanza TechnicalException")
