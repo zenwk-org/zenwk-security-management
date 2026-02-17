@@ -18,4 +18,4 @@ jobs:
       projectKey: ZenWkZen_zenwk-security-management
       organization: zenwk
       microserviceDir: ./zenwk-security
-    secrets: inherit
+    secrets: inherit # herencia implícita de secretos
