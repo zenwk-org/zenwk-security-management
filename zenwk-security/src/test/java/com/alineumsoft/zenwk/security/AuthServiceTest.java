@@ -7,7 +7,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -123,7 +125,8 @@ class AuthServiceTest {
 
     assertThrows(FunctionalException.class, () -> authService.authenticate(dto, request));
 
-    verify(logSecRepo).save(any(LogSecurity.class));
+    verify(logSecRepo, times(1)).save(any(LogSecurity.class));
+    verifyNoMoreInteractions(logSecRepo);
   }
 
   @Test
