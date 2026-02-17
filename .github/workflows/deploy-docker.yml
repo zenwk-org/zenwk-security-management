@@ -1,0 +1,24 @@
+name: Deploy security-zenwk (Docker Local)
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    name: Build & Deploy Docker (Host OS)
+    runs-on: [self-hosted, macos, docker]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker-compose build security-zenwk
+
+      - name: Stop running container
+        run: docker-compose stop security-zenwk || true
+
+      - name: Deploy container
+        run: docker-compose up -d security-zenwk

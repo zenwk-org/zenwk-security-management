@@ -7,6 +7,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+    contents: read
+    packages: read
+    
 jobs:
   sonar:
     uses: zenwk-org/zenwk-workflows/.github/workflows/sonar-services-java.yml@main
