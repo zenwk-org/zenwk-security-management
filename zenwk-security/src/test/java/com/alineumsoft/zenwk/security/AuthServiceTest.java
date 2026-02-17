@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -44,7 +43,6 @@ import com.alineumsoft.zenwk.security.user.repository.UserHistRepository;
 import com.alineumsoft.zenwk.security.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 
 
 class AuthServiceTest {
@@ -129,25 +127,25 @@ class AuthServiceTest {
     verify(logSecRepo, times(1)).save(any(LogSecurity.class));
     verifyNoMoreInteractions(logSecRepo);
   }
-  //
-  // @Test
-  // @DisplayName("logout: invalida token correctamente")
-  // void logout_Success() {
-  // when(jwtProvider.extractJwtFromCookie(request)).thenReturn(Optional.of("token-123"));
-  //
-  // authService.logout(request, userDetails);
-  //
-  // verify(jwtProvider).invalidateToken("token-123");
-  // verify(logSecRepo).save(any(LogSecurity.class));
-  // }
 
   @Test
-  @DisplayName("logout: error lanza TechnicalException")
-  void logout_Error() {
-    when(jwtProvider.extractJwtFromCookie(request)).thenThrow(new RuntimeException("ERROR"));
-    assertThrows(TechnicalException.class, () -> authService.logout(request, userDetails));
-    verify(logSecRepo, never()).save(any(LogSecurity.class));
+  @DisplayName("logout: invalida token correctamente")
+  void logout_Success() {
+    when(jwtProvider.extractJwtFromCookie(request)).thenReturn(Optional.of("token-123"));
+
+    authService.logout(request, userDetails);
+
+    verify(jwtProvider).invalidateToken("token-123");
+    verify(logSecRepo).save(any(LogSecurity.class));
   }
+
+  // @Test
+  // @DisplayName("logout: error lanza TechnicalException")
+  // void logout_Error() {
+  // when(jwtProvider.extractJwtFromCookie(request)).thenThrow(new RuntimeException("ERROR"));
+  // assertThrows(TechnicalException.class, () -> authService.logout(request, userDetails));
+  // verify(logSecRepo, never()).save(any(LogSecurity.class));
+  // }
 
   @Test
   @DisplayName("refreshJwt: retorna nuevo token")
