@@ -139,13 +139,6 @@ class AuthServiceTest {
     verify(logSecRepo).save(any(LogSecurity.class));
   }
 
-  // @Test
-  // @DisplayName("logout: error lanza TechnicalException")
-  // void logout_Error() {
-  // when(jwtProvider.extractJwtFromCookie(request)).thenThrow(new RuntimeException("ERROR"));
-  // assertThrows(TechnicalException.class, () -> authService.logout(request, userDetails));
-  // verify(logSecRepo, never()).save(any(LogSecurity.class));
-  // }
 
   @Test
   @DisplayName("refreshJwt: retorna nuevo token")
