@@ -1,6 +1,7 @@
 name: Deploy security-zenwk (Docker Local)
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop

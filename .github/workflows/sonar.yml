@@ -5,12 +5,12 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [main]
 
 permissions:
-    contents: read
-    packages: read
-    
+  contents: read
+  packages: read
+
 jobs:
   sonar:
     uses: zenwk-org/zenwk-workflows/.github/workflows/sonar-services-java.yml@main
