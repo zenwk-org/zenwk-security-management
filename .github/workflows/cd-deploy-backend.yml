@@ -1,0 +1,23 @@
+name: CD - Deploy - Backend
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI - Build - Backend"]
+    types:
+      - completed
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: zenwk-org/zenwk-workflows/.github/workflows/zenwk-cd-deploy-docker-template.yml@main
+    with:
+      service_name: zenwk-security
+      environment: dev
+    secrets:
+     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
