@@ -1,0 +1,20 @@
+name: Quality - Scan - Backend
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  sonar:
+    uses: zenwk-org/zenwk-workflows/.github/workflows/zenwk-quality-scan-java-template.yml@main
+    with:
+      projectKey: ZenWkZen_zenwk-security-management
+      organization: zenwk
+      microserviceDir: ./zenwk-security
+    secrets: inherit # herencia implícita de secretos

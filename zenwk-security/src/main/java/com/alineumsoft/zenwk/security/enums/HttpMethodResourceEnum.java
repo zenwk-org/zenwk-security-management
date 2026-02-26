@@ -30,7 +30,7 @@ public enum HttpMethodResourceEnum {
       "/api/persons/{id}"), PERSON_DELETE(HttpMethod.DELETE, "/api/persons/{id}"), PERSON_LIST(
           HttpMethod.GET, "/api/persons"), PERSON_GET(HttpMethod.GET,
               "/api/persons/{id}"), PERSON_UPLOAD_PHOTO_PROFILE(HttpMethod.POST,
-                  "/profile/upload-photo"),
+                  "/api/profile/upload-photo"),
   /**
    * Permisos
    */
