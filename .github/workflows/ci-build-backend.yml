@@ -7,8 +7,6 @@ on:
       - develop
       - test
       - main
-    types: [opened, synchronize, reopened]
-
   push:
     branches:
       - develop
@@ -29,4 +27,18 @@ jobs:
       build_context: zenwk-security
       publish_image: ${{ github.event_name == 'push' }}
     secrets:
-      GRADLE_PLUGIN_TOKEN: ${{ secrets.GRADLE_PLUGIN_TOKEN }} # paso explícito de secretos
+      GRADLE_PLUGIN_TOKEN: ${{ secrets.GRADLE_PLUGIN_TOKEN }}
+
+  trigger-cd:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger CD workflow for current branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Triggering CD for branch ${GITHUB_REF_NAME}"
+          gh workflow run "CD - Deploy - Backend" \
+          --repo "${GITHUB_REPOSITORY}" \
+          --ref "${GITHUB_REF_NAME}"
