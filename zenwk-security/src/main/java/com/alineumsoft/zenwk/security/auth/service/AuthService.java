@@ -113,7 +113,7 @@ public class AuthService extends ApiRestSecurityHelper {
 
       setLogSecuritySuccesfull(HttpStatus.OK.value(), logSec);
       logSecRepo.save(logSec);
-      log.info(" - [api/auth/login] - AuthService.authenticate() - [Succes]");
+      log.info(" - [api/auth/login] - AuthService.authenticate() - [*Succes]");
       return outDTO;
     } catch (RuntimeException e) {
       log.error(CommonMessageConstants.LOG_MSG_EXCEPTION, e);
